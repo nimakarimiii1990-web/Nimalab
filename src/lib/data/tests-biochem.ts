@@ -1,0 +1,82 @@
+import type { LabTest } from "../nima-types";
+
+export const TESTS_BIOCHEM: LabTest[] = [
+  // --- Electrolytes ---
+  { id: "na", fa: "سدیم", en: "Sodium (Na)", cat: "biochem", sp: "سرم/پلاسما", unit: "mEq/L", ref: "۱۳۵–۱۴۵", sig: "اصلی‌ترین کاتیون خارج سلولی؛ کنترل آب بدن و اسمولالیته.", f: "corrected-na", intr: "هایپرگلیسمی، مانیتول و لیپمی سدیم اندازه‌گیری‌شده را کاذب کم می‌کنند.", hot: "<120 یا >160 وضعیت اورژانس" },
+  { id: "k", fa: "پتاسیم", en: "Potassium (K)", cat: "biochem", sp: "سرم/پلاسما", unit: "mEq/L", ref: "۳/۵–۵/۱", sig: "کاتیون اصلی داخل سلولی؛ ریتم قلب و انتقال عصبی-عضلانی.", intr: "همولیز شایع‌ترین علت پتاسیم کاذب بالا؛ لخته تأخیری هم همین‌طور.", hot: "<2.5 یا >6.5 خطر آریتمی کشنده" },
+  { id: "cl", fa: "کلر", en: "Chloride (Cl)", cat: "biochem", sp: "سرم", unit: "mEq/L", ref: "۹۸–۱۰۶", sig: "آنیون اصلی خارج سلولی؛ همراه سدیم در محاسبه شکاف آنیونی.", f: "anion-gap" },
+  { id: "co2", fa: "دی‌اکسیدکربن توتال (بیکربنات)", en: "CO2 (Bicarbonate)", cat: "biochem", sp: "سرم", unit: "mEq/L", ref: "۲۲–۲۸", sig: "بافر اصلی بدن؛ در اسیدوز/آلکالوز متابولیک تغییر می‌کند.", f: "winter" },
+  { id: "ca", fa: "کلسیم توتال", en: "Calcium (Total)", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "۸/۵–۱۰/۵", sig: "انقباض عضله، انعقاد و ترشح هورمون؛ باید با آلبومین اصلاح شود.", f: "corrected-ca", intr: "هیپوآلبومینی، سیترات خون بانکی و Mg پایین جواب را جعل می‌کنند.", hot: "<7 یا >12 اورژانس" },
+  { id: "ca-ion", fa: "کلسیم یونیزه", en: "Ionized Calcium", cat: "biochem", sp: "سرم (بدون گارلند/هپارین‌دار)", unit: "mmol/L", ref: "۱/۱۲–۱/۳۲", sig: "شکل فعال بیولوژیک کلسیم؛ نیازی به اصلاح آلبومینی ندارد.", intr: "تماس طولانی با هوا و تأخیر بررسی pH نمونه را خراب می‌کند." },
+  { id: "mg", fa: "منیزیم", en: "Magnesium (Mg)", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "۱/۷–۲/۲", sig: "کوفاکتور ۳۰۰+ آنزیم؛ نقش در ریتم قلب و هیپوکالمی مقاوم.", intr: "همولیز و ترومبوسیتوز جواب را بالا می‌برند." },
+  { id: "phos", fa: "فسفر", en: "Phosphorus (P)", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "۲/۵–۴/۵", sig: "متابولیسم انرژی و استخوان؛ در نارسایی کلیه بالا می‌رود.", intr: "همولیز جواب کاذب بالا می‌دهد؛ ناشتا بودن مهم است." },
+  // --- Renal ---
+  { id: "crea", fa: "کراتینین", en: "Creatinine", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "مرد ۰/۷–۱/۳، زن ۰/۶–۱/۱", sig: "متابولیت عضله؛ اصلی‌ترین شاخص GFR و فیلتراسیون کلیوی.", f: "ckd-epi-2021-crea", intr: "کتوز، سفالوسپورین‌ها و داروهای آنتی‌بادی جنگنده مانند آمیکاسین جواب کریاتینین را جعل می‌کنند." },
+  { id: "bun", fa: "اوره (BUN)", en: "Blood Urea Nitrogen", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "۷–۲۰", sig: "محصول دفع پروتئین؛ در دهیدراتاسیون و خونریزی GI بالا می‌رود.", f: "bun-cr" },
+  { id: "egfr", fa: "eGFR (CKD-EPI 2021)", en: "eGFR CKD-EPI 2021", cat: "biochem", sp: "محاسباتی (سن، جنس، کراتینین)", unit: "mL/min/1.73m²", ref: "≥90 طبیعی؛ رده‌بندی G1–G5", sig: "استاندارد ۲۰۲۱ بدون فاکتور نژاد؛ مبنای رده‌بندی CKD در KDIGO.", f: "ckd-epi-2021-crea" },
+  { id: "cysc", fa: "سیستاتین C", en: "Cystatin C", cat: "biochem", sp: "سرم", unit: "mg/L", ref: "۰/۶–۱/۰", sig: "مارکر GFR مستقل از جنس و جرم عضلانی؛ در KDIGO 2024 توصیه ترکیبی.", f: "ckd-epi-2021-cys", intr: "کورتیکواستروئید و التهاب آن را بالا می‌برند." },
+  { id: "ua", fa: "اسید اوریک", en: "Uric Acid", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "مرد ۳/۵–۷/۲، زن ۲/۶–۶/۰", sig: "نهایی مسیر پورین؛ گوت، سنگ اسید اوریک و سندرم لیز تومور.", intr: "آسپیرین کم‌دوز و دیورتیک‌های تیازیدی اثر متفاوت دارند." },
+  { id: "osm-serum", fa: "اسمولالیته سرم", en: "Serum Osmolality", cat: "biochem", sp: "سرم", unit: "mOsm/kg", ref: "۲۷۵–۲۹۵", sig: "مرجع تشخیص اختلالات آب؛ همراه شکاف اسمولار در مسمومیت.", f: "osm-gap" },
+  // --- Lipids ---
+  { id: "tc", fa: "کلسترول توتال", en: "Total Cholesterol", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "مطلوب <۲۰۰", sig: "جمع کلسترول همه لیپوپروتئین‌ها؛ پایه ارزیابی ریسک قلبی.", f: "tc-hdl-ratio", intr: "بایوتین بالا جواب کاذب کم می‌کند؛ ICT>30/جنس لیپمی interferans." },
+  { id: "tg", fa: "تری‌گلیسرید", en: "Triglycerides", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "ناشتا <۱۵۰", sig: "ذخیره چربی و VLDL؛ بالای 500 خطر پانکراتیت.", f: "ldl-friedewald", intr: "الکل، اشتهازخ و بارداری بالا می‌برند؛ ناشتا ۹–۱۲ ساعت استاندارد کلاسیک." },
+  { id: "hdl", fa: "کلسترول HDL", en: "HDL Cholesterol", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "مرد ≥۴۰، زن ≥۵۰", sig: "«کلسترول خوب»؛ ترانسپورت معکوس کلسترول و محافظ ریسک.", f: "tc-hdl-ratio" },
+  { id: "ldl", fa: "LDL محاسباتی (فری‌دوالد)", en: "LDL-C calculated", cat: "biochem", sp: "محاسباتی", unit: "mg/dL", ref: "مطلوب <۱۰۰؛ هدف مطابق ریسک ۵۵–۱۳۰", sig: "هدف اصلی درمان دیس‌لیپیدمی؛ محدود در TG≥400 و LDL خیلی پایین.", f: "ldl-friedewald" },
+  { id: "ldl-direct", fa: "LDL مستقیم", en: "Direct LDL-C", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "مطابق LDL محاسباتی", sig: "سنجش هموژنوس؛ در ناشتا نبودن و TG بالا قابل استفاده است.", intr: "دقت به نوع کیت وابسته است؛ در Lp(a) بالا و بیماران استاتین‌دار خطا دارد." },
+  { id: "vldl", fa: "VLDL کلسترول", en: "VLDL-C", cat: "biochem", sp: "محاسباتی", unit: "mg/dL", ref: "۵–۴۰", sig: "ذرات غنی از TG؛ در دیس‌بتالیپوپروتئینمی نامعتبر.", f: "ldl-friedewald" },
+  { id: "non-hdl-c", fa: "کلسترول غیر HDL", en: "non-HDL-C", cat: "biochem", sp: "محاسباتی", unit: "mg/dL", ref: "هدف = LDL هدف + ۳۰", sig: "جمع LDL+VLDL+LDL-باقی‌مانده؛ در دیابت و TG بالا شاخص بهتر.", f: "non-hdl" },
+  { id: "apoa1", fa: "آپولیپوپروتئین A1", en: "Apo A1", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "مرد ۱۱۰–۱۸۰، زن ۱۲۰–۲۰۰", sig: "پروتئین اصلی HDL؛ محافظ آنتی‌اتروژنیک." },
+  { id: "apob", fa: "آپولیپوپروتئین B", en: "Apo B", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "هدف <۹۰ (ریسک بالا <۷۰)", sig: "یک مولکول روی هر ذره آتروژنیک؛ شمارش دقیق ذرات آتروژنیک.", intr: "با کلسترول ذره‌ای نامتناسب → Lp(a) یا دیس‌بتالیپوپروتئینمی بررسی شود." },
+  { id: "lpa", fa: "لیپوپروتئین (a)", en: "Lipoprotein(a)", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "<۳۰ (قابل استدلال؛ به روش وابسته)", sig: "فاکتور ریسک ژنتیکی مستقل؛ یک‌بار در عمر سنجیده شود.", intr: "التهاب و بیماری کلیوی بالا می‌برند؛ آنالیز آن روش‌محور است." },
+  // --- Diabetes ---
+  { id: "glu-fbs", fa: "قند ناشتا", en: "Fasting Glucose", cat: "biochem", sp: "سرم/پلاسما", unit: "mg/dL", ref: "نرمال <۱۰۰؛ ۱۰۰–۱۲۵ پره‌دیابت؛ ≥۱۲۶ دیابت", sig: "تشخیص استاندارد دیابت و پایش گلیسمی.", intr: "تأخیر جداسازی سلول‌ها قند را کم می‌کند (گلیکولیز).", hot: "<50 یا >400 اورژانس" },
+  { id: "ogtt-2h", fa: "قند ۲ ساعت OGTT", en: "2h OGTT Glucose", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "<۱۴۰ نرمال؛ ۱۴۰–۱۹۹ IGT؛ ≥۲۰۰ دیابت", sig: "طلایی‌ترین تشخیص دیابت و IGT پس از بار گلوکز ۷۵ گرم." },
+  { id: "hba1c", fa: "هموگلوبین A1c", en: "HbA1c", cat: "biochem", sp: "خون کامل EDTA", unit: "%", ref: "نرمال <۵/۷؛ پره‌دیابت ۵/۷–۶/۴؛ دیابت ≥۶/۵", sig: "میانگین قند ۲–۳ ماه؛ معیار NGSP/IFCC پایش دیابت.", f: "eag", intr: "هموگلوبینوپاتی، کم‌خونی/پلی‌گلوبولی، همولیز، نارسایی کلیه و بارداری جواب را جعل می‌کنند." },
+  { id: "fructosamine", fa: "فروکتوزآمین", en: "Fructosamine", cat: "biochem", sp: "سرم", unit: "µmol/L", ref: "۲۰۵–۲۸۵ (میانگین ۲–۳ هفته)", sig: "گلیکاسیون آلبومین؛ پایش کوتاه‌مدت در هموگلوبینوپاتی/بارداری.", f: "a1c-from-eag" },
+  { id: "insulin-f", fa: "انسولین ناشتا", en: "Fasting Insulin", cat: "biochem", sp: "سرم", unit: "µIU/mL", ref: "۲–۲۵ (پزشکی‌محور)", sig: "پایه محاسبه HOMA-IR و QUICKI؛ سنجش مقاومت انسولین.", f: "homa-ir", intr: "بایوتین و آنتی‌بادی‌های هتروفیل در ایمیونواسی جعل می‌کنند." },
+  { id: "cpeptide", fa: "پپتید C", en: "C-Peptide", cat: "biochem", sp: "سرم", unit: "ng/mL", ref: "۰/۸–۴/۰", sig: "تفریق دیابت نوع ۱ از نوع ۲ و هیپوگلیسمی اگزوژن-محور." },
+  // --- Proteins ---
+  { id: "tp", fa: "پروتئین توتال", en: "Total Protein", cat: "biochem", sp: "سرم", unit: "g/dL", ref: "۶/۴–۸/۳", sig: "جمع آلبومین و گلوبولین‌ها؛ وضعیت تغذیه و پلاسماسیروز.", f: "saag" },
+  { id: "alb", fa: "آلبومین", en: "Albumin", cat: "biochem", sp: "سرم", unit: "g/dL", ref: "۳/۵–۵/۰", sig: "پروتئین اصلی؛ حفظ فشار اوسموتیک و حامل دارو/کلسیم.", f: "corrected-ca", intr: "در هیدراتاسیون زیاد و اگزما از دست می‌رود؛ نیم‌عمر ۲۰ روز." },
+  { id: "prealbumin", fa: "پروآلبومین (ترانستیرتین)", en: "Prealbumin", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "۱۵–۳۵", sig: "شاخص تغذیه سریع‌الجواب (نیم‌عمر ۲ روز)." },
+  { id: "crp", fa: "پروتئین واکنشی C (CRP)", en: "C-Reactive Protein", cat: "biochem", sp: "سرم", unit: "mg/L", ref: "<۱۰", sig: "پروتئین فاز حاد؛ التهاب/عفونت باکتریایی سریع‌تر از ESR." },
+  { id: "hs-crp", fa: "CRP حساسیت بالا", en: "hs-CRP", cat: "biochem", sp: "سرم", unit: "mg/L", ref: "<۱ کم‌خطر؛ ۱–۳ متوسط؛ >۳ بالاخطر", sig: "پیش‌بینی ریسک قلبی-عروقی؛ دو بار با فاصله ۲ هفته سنجیده شود.", intr: "عفونت/آسیب اخیر نتیجه را مخدوش می‌کند." },
+  { id: "pct", fa: "پروکلسیتونین", en: "Procalcitonin", cat: "biochem", sp: "سرم", unit: "ng/mL", ref: "<۰/۵", sig: "تشخیص سپسیس باکتریایی و راهنمای قطع آنتی‌بیوتیک.", intr: "در پانکراتیت شدید، شوک و جراحی بزرگ بالا می‌رود." },
+  { id: "b2m", fa: "β۲-میکروگلوبولین", en: "Beta-2 Microglobulin", cat: "biochem", sp: "سرم", unit: "mg/L", ref: "۰/۸–۲/۲", sig: "پیش‌آگهی میلوم و پایش کلیوی/پیوند.", intr: "در التهاب و بیماری‌های لنفوپرولیفراتیو بالا می‌رود." },
+  { id: "spep", fa: "الکتروفورز پروتئین سرم", en: "SPEP", cat: "biochem", sp: "سرم", unit: "g/dL", ref: "آلبومین ۵۵–۶۵%، γ-گلوبولین ۸–۱۶%", sig: "کشف پاراپروتئین (M-spike) در میلوم و MGUS.", intr: "همولیز و لیپمی الگو را مخدوش می‌کند." },
+  { id: "flc-k", fa: "زنجیره سبک آزاد کاپا", en: "Free Kappa Light Chain", cat: "biochem", sp: "سرم", unit: "mg/L", ref: "۳/۳–۱۹/۴", sig: "پایش میلوم زنجیره سبک و AL-آمییلوئیدوز." },
+  { id: "flc-l", fa: "زنجیره سبک آزاد لامبدا", en: "Free Lambda Light Chain", cat: "biochem", sp: "سرم", unit: "mg/L", ref: "۵/۷–۲۶/۳", sig: "همتای لامبدای زنجیره سبک؛ مبنای نسبت FLC.", intr: "نسبت κ/λ نرمال ۰/۲۶–۱/۶۵؛ خارج از آن، کلونال بودن محتمل است." },
+  { id: "immunofix", fa: "ایمونوفیکساسیون سرم", en: "Serum Immunofixation", cat: "biochem", sp: "سرم", unit: "کیفی", ref: "منفی", sig: "تأیید نوع زنجیره سنگین/سبک پاراپروتئین؛ حساس‌تر از SPEP." },
+  // --- Bilirubin & Metabolites ---
+  { id: "tbili", fa: "بیلی‌روبین توتال", en: "Total Bilirubin", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "۰/۲–۱/۲", sig: "متابولیت هم‌گلوبین؛ ژیاوند/هیپرپلاسمای کبدی.", intr: "نور و تأخیر جواب را کم می‌کند؛ همولیز داخل‌خونی بالا می‌برد." },
+  { id: "dbili", fa: "بیلی‌روبین مستقیم", en: "Direct Bilirubin", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "۰–۰/۳", sig: "مقروطی؛ در کولستانس/هپاتیت بالا می‌رود.", intr: "تأخیر جواب اکسیداسیون و جعل کم‌شدن." },
+  { id: "nh3", fa: "آمونیاک", en: "Ammonia", cat: "biochem", sp: "سرم (یخ‌نگهداری، فوری)", unit: "µg/dL", ref: "۱۵–۴۵", sig: "انسفالوپاتی کبدی و اختلالات چرخه اوره.", intr: "تأخیر سرد نمونه جواب را جعل بالا می‌برد." },
+  { id: "lactate", fa: "لاکتات", en: "Lactate", cat: "biochem", sp: "سرم/پلاسما (بی‌هوازی)", unit: "mmol/L", ref: "۰/۵–۲/۲", sig: "شوک سپتیک، هیپوکسی بافتی و متفورمین-محور لاکتیک اسیدوز.", intr: "گارمت‌گیری سخت (سرم بی‌هوازی) نمونه‌گیری." },
+  { id: "hcy", fa: "هموسیستئین", en: "Homocysteine", cat: "biochem", sp: "سرم ناشتا", unit: "µmol/L", ref: "۵–۱۵", sig: "ریسک ترومبوز و ضعف ویتامین B12/فولات." },
+  { id: "mma", fa: "متیل‌مالونیک اسید", en: "Methylmalonic Acid", cat: "biochem", sp: "سرم/ادرار", unit: "nmol/L", ref: "<۳۷۸ (سرم)", sig: "نشانگر حساس کمبود B12 (زودتر از B12 سرم)." },
+  { id: "bhb", fa: "بتا-هیدروکسی بوتیرات", en: "Beta-Hydroxybutyrate", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "<۲/۷ mmol/L", sig: "تشخیص و پایش کتواسیدوز (DKA) دقیق‌تر از کتون ادرار." },
+  // --- Vitamins ---
+  { id: "b12", fa: "ویتامین B12", en: "Vitamin B12", cat: "biochem", sp: "سرم", unit: "pg/mL", ref: "۲۰۰–۹۰۰", sig: "کم‌خونی مگالوبلاستیک و نوروپاتی؛ همراه MMA/هموسیستئین تفسیر شود.", intr: "قرص‌های بایوتین بالا در ایمیونواسی جعل جواب کم/بالا می‌کنند." },
+  { id: "folate", fa: "فولات", en: "Folate", cat: "biochem", sp: "سرم/RBC", unit: "ng/mL", ref: "سرم >۳؛ RBC >۱۴۰", sig: "سنجش ذخیره فولات (RBC دقیق‌تر از سرم)." },
+  { id: "vitd", fa: "ویتامین D (25-OH)", en: "25-Hydroxy Vitamin D", cat: "biochem", sp: "سرم", unit: "ng/mL", ref: "کمبود <۱۰؛ ناکافی ۱۰–۲۰؛ کافی ۲۰–۵۰", sig: "استاندارد سنجش وضعیت ویتامین D و سلامت استخوان." },
+  // --- Iron panel ---
+  { id: "fe", fa: "آهن سرم", en: "Serum Iron", cat: "biochem", sp: "سرم", unit: "µg/dL", ref: "مرد ۶۵–۱۷۵، زن ۵۰–۱۷۰", sig: "نیم‌رخ آهن؛ در سطح نوسان شبانه‌روزی بالا/پایین می‌شود.", intr: "مکمل آهن اخیر جواب کاذب بالا می‌دهد؛ صبح نمونه بگیرید." },
+  { id: "tibc", fa: "TIBC", en: "Total Iron Binding Capacity", cat: "biochem", sp: "سرم", unit: "µg/dL", ref: "۲۵۰–۴۲۵", sig: "ظرفیت کل ترانسفرین؛ در کمبود آهن بالا و التهاب پایین.", f: "tibc-tf" },
+  { id: "uibc", fa: "UIBC", en: "Unsaturated Iron Binding Capacity", cat: "biochem", sp: "سرم", unit: "µg/dL", ref: "۱۵۰–۳۳۰", sig: "ظرفیت باقی‌مانده؛ همراه TIBC و آهن محاسبه TSAT.", f: "uibc" },
+  { id: "ferritin", fa: "فریتین", en: "Ferritin", cat: "biochem", sp: "سرم", unit: "ng/mL", ref: "مرد ۳۰–۴۰۰، زن ۱۵–۲۰۰", sig: "بهترین شاخص ذخیره آهن؛ پروتئین فاز حاد التهابی.", intr: "التهاب، کبد چرب و هموکروماتوز جواب کاذب بالا می‌دهند؛ با CRP تفسیر شود." },
+  { id: "transferrin", fa: "ترانسفرین", en: "Transferrin", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "۲۰۰–۳۶۰", sig: "حامل آهن؛ در کمبود آهن و بارداری بالا، التهاب پایین.", f: "tibc-tf" },
+  // --- Blood gases ---
+  { id: "bg-ph", fa: "pH خون شریانی", en: "Arterial pH", cat: "biochem", sp: "خون شریانی", unit: "—", ref: "۷/۳۵–۷/۴۵", sig: "مرجع اسید-باز؛ با HCO3 و pCO2 تفسیر شود.", f: "winter" },
+  { id: "bg-pco2", fa: "PaCO₂", en: "Arterial pCO2", cat: "biochem", sp: "خون شریانی", unit: "mmHg", ref: "۳۵–۴۵", sig: "جزء تنفسی اسید-باز؛ جبران متابولیک را می‌سنجد.", f: "winter" },
+  { id: "bg-po2", fa: "PaO₂", en: "Arterial pO2", cat: "biochem", sp: "خون شریانی", unit: "mmHg", ref: "۸۰–۱۰۰", sig: "اکسیژناسیون؛ با A–a گرادیان علت هیپوکسی مشخص می‌شود.", f: "a-a-gradient" },
+  { id: "bg-hco3", fa: "HCO₃ خون شریانی", en: "Arterial HCO3", cat: "biochem", sp: "خون شریانی", unit: "mEq/L", ref: "۲۲–۲۶", sig: "بافر متابولیکی؛ بازه وینتر جبران را می‌سنجد.", f: "winter" },
+  // --- Calc checks ---
+  { id: "anion-gap-calc", fa: "شکاف آنیونی (محاسباتی)", en: "Anion Gap (calc)", cat: "biochem", sp: "محاسباتی", unit: "mEq/L", ref: "۸–۱۲", sig: "پرچم‌گذاری اسیدوز متابولیک؛ بخش نهایی نوارعربی سلامت جواب.", f: "anion-gap" },
+  { id: "osm-gap-calc", fa: "شکاف اسمولار (محاسباتی)", en: "Osmolar Gap (calc)", cat: "biochem", sp: "محاسباتی", unit: "mOsm/kg", ref: "−۲ تا +۱۰", sig: "شکاف اندازه‌گیری‌شده/محاسباتی اسمولالیته؛ مسمومیت سموم الکلی.", f: "osm-gap" },
+  { id: "corr-ca-calc", fa: "کلسیم اصلاح‌شده (محاسباتی)", en: "Corrected Ca (calc)", cat: "biochem", sp: "محاسباتی", unit: "mg/dL", ref: "۸/۵–۱۰/۵", sig: "کلسیم واقعی در هیپو/هایپرآلبومینی.", f: "corrected-ca" },
+  { id: "corr-na-calc", fa: "سدیم اصلاح‌شده (محاسباتی)", en: "Corrected Na (calc)", cat: "biochem", sp: "محاسباتی", unit: "mEq/L", ref: "۱۳۵–۱۴۵", sig: "سدیم واقعی در هایپرگلیسمی (Hillier).", f: "corrected-na" },
+  // --- Trace elements ---
+  { id: "copper", fa: "مس", en: "Copper", cat: "biochem", sp: "سرم", unit: "µg/dL", ref: "۷۰–۱۴۰", sig: "ویلسون، کمبود تغذیه‌ای و آنمی ریزسیتاری توضیح‌ناپذیر.", intr: "با سرولوپلاسمین تفسیر شود." },
+  { id: "cerulo", fa: "سرولوپلاسمین", en: "Ceruloplasmin", cat: "biochem", sp: "سرم", unit: "mg/dL", ref: "۲۰–۶۰", sig: "حامل مس؛ در ویلسون پایین و التهاب بالا می‌رود." },
+  { id: "zinc", fa: "زینک", en: "Zinc", cat: "biochem", sp: "سرم", unit: "µg/dL", ref: "۷۰–۱۲۰", sig: "زخم، ایمنی و طعم؛ کمبود شایع در بیماران IBD." },
+];

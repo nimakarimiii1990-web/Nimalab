@@ -1,0 +1,31 @@
+{
+  "name": "nima-desktop",
+  "version": "1.1.0",
+  "description": "Nima - Laboratory Companion (desktop shell)",
+  "main": "main.js",
+  "author": "Nima Lab",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.nima.lab",
+    "productName": "Nima",
+    "files": [
+      "main.js",
+      "icon.ico"
+    ],
+    "win": {
+      "target": ["portable"],
+      "icon": "icon.ico"
+    },
+    "portable": {
+      "artifactName": "Nima-Desktop.exe"
+    }
+  }
+}

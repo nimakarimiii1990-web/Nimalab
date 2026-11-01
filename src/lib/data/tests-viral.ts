@@ -1,0 +1,61 @@
+import type { LabTest } from "../nima-types";
+
+export const TESTS_VIRAL: LabTest[] = [
+  // --- Hepatitis B ---
+  { id: "hbsag", fa: "HBsAg", en: "Hepatitis B Surface Antigen", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "عفونت فعال/حامل هپاتیت B؛ اولین مارکر ظاهرشده.", intr: "وین‌دو HBsAg در عفونت زودرس منفی کاذب است." },
+  { id: "anti-hbs", fa: "آنتی-HBs", en: "Anti-HBs Antibody", cat: "viral", sp: "سرم", unit: "mIU/mL", ref: "<۱۰ واکنش‌ناپذیر؛ ≥۱۰ ایمن", sig: "ایمونیتی بعد از واکسن یا بهبود عفونت." },
+  { id: "anti-hbc-igm", fa: "آنتی-HBc IgM", en: "Anti-HBc IgM", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "هپاتیت B حاد؛ در وین‌دو HBsAg منفی ارزشمند." },
+  { id: "anti-hbc-tot", fa: "آنتی-HBc توتال", en: "Anti-HBc Total", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "مواجهه قبلی با HBV؛ در خون‌دهنده غربالگری اصلی." },
+  { id: "hbeag", fa: "HBeAg", en: "Hepatitis B e Antigen", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "تکثیر فعال و عفونی‌کنندگی بالا؛ با anti-HBe." },
+  { id: "anti-hbe", fa: "آنتی-HBe", en: "Anti-HBe", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "—", sig: "کاهش عفونی‌کنندگی؛ سرکتانت HBeAg-منفی بررسی شود." },
+  { id: "hbv-dna", fa: "HBV DNA وایرال‌لود", en: "HBV DNA Viral Load", cat: "viral", sp: "سرم/پلاسما EDTA", unit: "IU/mL", ref: "<۲۰ (خاموش)", sig: "استاندارد پایش تکثیر و پاسخ درمان هپاتیت B." },
+  // --- Hepatitis C / A / E ---
+  { id: "hcv-ab", fa: "آنتی-HCV", en: "HCV Antibody", cat: "viral", sp: "سرم", unit: "S/CO", ref: "منفی", sig: "غربالگری هپاتیت C؛ مثبت → HCV RNA تأیید شود." },
+  { id: "hcv-rna", fa: "HCV RNA وایرال‌لود", en: "HCV RNA Viral Load", cat: "viral", sp: "پلاسما EDTA", unit: "IU/mL", ref: "منفی (کمتر از حد تشخیص)", sig: "عفونت فعال HCV؛ پایه پایش DAA." },
+  { id: "hcv-ag", fa: "آنتیژن هسته HCV", en: "HCV Core Antigen", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "جایگزین کم‌هزینه RNA در مناطق کم‌منبع." },
+  { id: "hav-igm", fa: "آنتی-HAV IgM", en: "HAV IgM", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "هپاتیت A حاد (مدفوع-دهانی)." },
+  { id: "hav-igg", fa: "آنتی-HAV IgG", en: "HAV IgG", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "—", sig: "ایمونیتی قبلی/واکسن هپاتیت A." },
+  { id: "hev-igm", fa: "آنتی-HEV IgM", en: "HEV IgM", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "هپاتیت E حاد؛ در بارداری خطرناک." },
+  // --- HIV / HTLV ---
+  { id: "hiv-agab", fa: "HIV Ag/Ab نسل چهارم", en: "HIV 4th Gen Ag/Ab", cat: "viral", sp: "سرم", unit: "S/CO", ref: "غیر واکنشی", sig: "غربالگری HIV با پنجره ۲–۳ هفته؛ مثبت → تأیید وسترن‌بلات/PCR." },
+  { id: "hiv-ab12", fa: "آنتی‌بادی HIV-1/2", en: "HIV-1/2 Antibody", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "افتراق HIV-1 از HIV-2." },
+  { id: "hiv-rna", fa: "HIV RNA وایرال‌لود", en: "HIV-1 RNA Viral Load", cat: "viral", sp: "پلاسما EDTA", unit: "copies/mL", ref: "<۵۰ (پایین‌تر از حد تشخیص)", sig: "پایش ART و تثبیت درمان؛ در نوزادان تشخیصی." },
+  { id: "htlv", fa: "HTLV-1/2", en: "HTLV-1/2 Antibody", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "لوسمی/لنفوم سلول T بالغ و میلوپاتی؛ در خون‌دهنده غربالگری." },
+  // --- CMV / EBV ---
+  { id: "cmv-igm", fa: "CMV IgM", en: "CMV IgM", cat: "viral", sp: "سرم", unit: "این‌دکس", ref: "منفی", sig: "عفونت حاد CMV؛ در بارداری خطر جنینی.", intr: "RF بالا مثبت کاذب می‌دهد؛ آویدتی‌دنسی تأیید شود." },
+  { id: "cmv-igg", fa: "CMV IgG", en: "CMV IgG", cat: "viral", sp: "سرم", unit: "U/mL", ref: "—", sig: "مواجهه قبلی CMV؛ در پیوند و بارداری پایه‌گذاری." },
+  { id: "cmv-avidity", fa: "CMV آویدتیه", en: "CMV IgG Avidity", cat: "viral", sp: "سرم", unit: "%", ref: "پایین <۴۰% = عفونت اخیر", sig: "افتراق عفونت اولیه از قدیمی در بارداری." },
+  { id: "cmv-dna", fa: "CMV DNA وایرال‌لود", en: "CMV DNA Quantitative", cat: "viral", sp: "خون/ادرار/CSF", unit: "copies/mL", ref: "منفی", sig: "CMV فعال در پیوند و نوزادان." },
+  { id: "ebv-vca-igm", fa: "EBV VCA IgM", en: "EBV VCA IgM", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "عفونت حاد EBV (مونونوکلئوز)." },
+  { id: "ebv-vca-igg", fa: "EBV VCA IgG", en: "EBV VCA IgG", cat: "viral", sp: "سرم", unit: "U/mL", ref: "—", sig: "با EBNA الگوی عفونت گذشته/فعال می‌سازد." },
+  { id: "ebna", fa: "EBNA-1", en: "EBV Nuclear Antigen", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "—", sig: "عفونت گذشته؛ غایب در عفونت حاد اولیه." },
+  { id: "ebv-dna", fa: "EBV DNA وایرال‌لود", en: "EBV DNA Quantitative", cat: "viral", sp: "خون کامل", unit: "copies/mL", ref: "منفی", sig: "پایش لنفوم و پیوند (PTLD)." },
+  // --- Herpes / VZV ---
+  { id: "hsv-igg", fa: "HSV-1/2 IgG", en: "HSV Type-Specific IgG", cat: "viral", sp: "سرم", unit: "این‌دکس", ref: "منفی", sig: "عفونت گذشته هرپس؛ در عفونت حاد مفید نیست." },
+  { id: "hsv-igm", fa: "HSV IgM", en: "HSV IgM", cat: "viral", sp: "سرم", unit: "این‌دکس", ref: "منفی", sig: "عفونت حاد/new؛ عود هم می‌تواند مثبت باشد." },
+  { id: "hsv-pcr", fa: "HSV PCR", en: "HSV-1/2 PCR", cat: "viral", sp: "CSF/ضایعه", unit: "کیفی/مثبت", ref: "منفی", sig: "انسهفالیت هرپسی و تشخیص ضایعات تناسلی." },
+  { id: "vzv-igm", fa: "VZV IgM", en: "Varicella Zoster IgM", cat: "viral", sp: "سرم", unit: "این‌دکس", ref: "منفی", sig: "آبه‌ریلا/زونستر حاد." },
+  { id: "vzv-igg", fa: "VZV IgG", en: "Varicella Zoster IgG", cat: "viral", sp: "سرم", unit: "U/mL", ref: "—", sig: "ایمونیتی آبله‌مرغان." },
+  // --- TORCH & Childhood ---
+  { id: "rubella-igm", fa: "روبیلا IgM", en: "Rubella IgM", cat: "viral", sp: "سرم", unit: "این‌دکس", ref: "منفی", sig: "عفونت حاد روبلا؛ در بارداری تراتوژن.", intr: "همولیز و آویدتیه پایین بررسی شود." },
+  { id: "rubella-igg", fa: "روبیلا IgG", en: "Rubella IgG", cat: "viral", sp: "سرم", unit: "IU/mL", ref: "≥۱۰ ایمن", sig: "ایمونیتی واکسین/عفونت قبلی." },
+  { id: "rubella-avidity", fa: "روبیلا آویدتیه", en: "Rubella IgG Avidity", cat: "viral", sp: "سرم", unit: "%", ref: "پایین = عفونت اخیر", sig: "افتراق عفونت اولیه بارداری از واکسیناسیون قبلی." },
+  { id: "toxo-igm", fa: "توکسوپلاسما IgM", en: "Toxoplasma IgM", cat: "viral", sp: "سرم", unit: "این‌دکس", ref: "منفی", sig: "توکسوپلاسموز حاد؛ در بارداری و HIV اهمیت دارد.", intr: "IgM تا سال‌ها باقی می‌ماند؛ آویدتیه بررسی شود." },
+  { id: "toxo-igg", fa: "توکسوپلاسما IgG", en: "Toxoplasma IgG", cat: "viral", sp: "سرم", unit: "IU/mL", ref: "<۴ غیر ایمن", sig: "مواجهه قبلی؛ آویدتیه بالا = عفونت قدیمی." },
+  { id: "torch", fa: "پانل TORCH", en: "TORCH Panel", cat: "viral", sp: "سرم", unit: "پانل", ref: "منفی", sig: "Toxo، Rubella، CMV، HSV در غربالگری بارداری و نوزاد." },
+  { id: "measles-igm", fa: "سوری (سرخک) IgM", en: "Measles IgM", cat: "viral", sp: "سرم", unit: "این‌دکس", ref: "منفی", sig: "سرخک حاد؛ در روزهای ۳–۵ بثورات مثبت." },
+  { id: "mumps-igm", fa: "اکامپ (اوریون) IgM", en: "Mumps IgM", cat: "viral", sp: "سرم", unit: "این‌دکس", ref: "منفی", sig: "اوریون حاد؛ پاروتید و اورکیت." },
+  // --- Respiratory / GI ---
+  { id: "influenza-ag", fa: "آنتی‌ژن آنفلوآنزا A/B", en: "Influenza A/B Antigen", cat: "viral", sp: "سواپ بینی", unit: "کیفی/مثبت", ref: "منفی", sig: "تشخیص سریع آنفلوآنزا؛ حساسیت متوسط." },
+  { id: "rsv-ag", fa: "آنتی‌ژن RSV", en: "RSV Antigen", cat: "viral", sp: "سواپ بینی", unit: "کیفی/مثبت", ref: "منفی", sig: "برونشیولیت شیرخوار." },
+  { id: "sarscov2-ag", fa: "آنتی‌ژن سریع کرونا", en: "SARS-CoV-2 Rapid Antigen", cat: "viral", sp: "سواپ بینی", unit: "کیفی/مثبت", ref: "منفی", sig: "تشخیص سریع؛ در علامت‌دار حساسیت بالا." },
+  { id: "sarscov2-pcr", fa: "RT-PCR کرونا", en: "SARS-CoV-2 RT-PCR", cat: "viral", sp: "سواپ نازوفارینکس", unit: "Ct", ref: "منفی", sig: "مرجع تشخیص کرونا؛ Ct پایین = وایرال‌لود بالا." },
+  { id: "dengue-ns1", fa: "دنگی NS1", en: "Dengue NS1 Antigen", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "دنگی روز ۱–۵؛ با IgM/IgG افتراق اولیه/ثانویه." },
+  { id: "dengue-igm", fa: "دنگی IgM", en: "Dengue IgM", cat: "viral", sp: "سرم", unit: "این‌دکس", ref: "منفی", sig: "دنگی اخیر (روز ۵+)." },
+  { id: "rotavirus-ag", fa: "آنتی‌ژن روتاویروس", en: "Rotavirus Antigen", cat: "viral", sp: "مدفوع", unit: "کیفی/مثبت", ref: "منفی", sig: "اسهال ویروسی کودکان." },
+  { id: "adeno-ag", fa: "آنتی‌ژن آدنوویروس 40/41", en: "Adenovirus 40/41 Antigen", cat: "viral", sp: "مدفوع", unit: "کیفی/مثبت", ref: "منفی", sig: "اسهال آدنوویروسی." },
+  { id: "cchf-igm", fa: "کریما-کونگو IgM", en: "CCHF IgM", cat: "viral", sp: "سرم (BSL-3)", unit: "کیفی/مثبت", ref: "منفی", sig: "تب هموراژیک کریمه-کنگو؛ در ایران موذی‌تبار (سال‌انه موارد)." },
+  { id: "cchf-pcr", fa: "CCHF RT-PCR", en: "CCHF Viral RNA PCR", cat: "viral", sp: "سرم (BSL-3)", unit: "کیفی/مثبت", ref: "منفی", sig: "تشخیص زودهنگام CCHF و ایزولاسیون." },
+  { id: "parvo-b19", fa: "پاروویروس B19", en: "Parvovirus B19 IgM/IgG", cat: "viral", sp: "سرم", unit: "کیفی/مثبت", ref: "منفی", sig: "اپوکریزیس آپلاستیک و تضادپنج (پنجم) کودکی." },
+  { id: "wnv", fa: "ویروس نیل غربی", en: "West Nile Virus IgM", cat: "viral", sp: "سرم/CSF", unit: "این‌دکس", ref: "منفی", sig: "مننگوانسهفالیت WNV؛ در خوزستان بومی." },
+];
