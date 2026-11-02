@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import {
   FlaskConical,
@@ -24,7 +23,6 @@ import {
   ShieldCheck,
   Newspaper,
   CalendarDays,
-  FileText,
   HelpCircle,
   Menu,
   X,
@@ -33,7 +31,6 @@ import {
   Settings2,
   FileStack,
 } from "lucide-react";
-import type { CatId } from "@/lib/nima-types";
 import { AuthProvider, useAuth } from "@/lib/auth";
 
 export const CAT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -93,20 +90,20 @@ export function useHashRoute(): { route: string; param: string; go: (r: string, 
   return { route: route || "home", param, go };
 }
 
-export function Logo({ size = 34 }: { size?: number }) {
+export function Logo({ size = 32 }: { size?: number }) {
   return (
-    <div className="flex items-center gap-2 select-none">
+    <div className="flex items-center gap-1.5 select-none">
       <div
-        className="rounded-xl bg-gradient-to-br from-[#0b5cad] to-[#00a5b5] text-white flex items-center justify-center shadow-md"
+        className="rounded-lg bg-gradient-to-br from-[#0b5cad] to-[#00a5b5] text-white flex items-center justify-center shadow-sm"
         style={{ width: size, height: size }}
       >
         <Droplets className="w-1/2 h-1/2" />
       </div>
       <div className="leading-tight text-left">
-        <div className="font-extrabold text-lg tracking-wide text-[#0b5cad]" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+        <div className="font-extrabold text-base tracking-wide text-[#0b5cad]" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
           Nima
         </div>
-        <div className="text-[10px] text-muted-foreground font-medium tracking-wide">LAB COMPANION</div>
+        <div className="text-[9px] text-muted-foreground font-medium tracking-wide">LAB COMPANION</div>
       </div>
     </div>
   );
@@ -164,7 +161,6 @@ function AdminDialog({ onClose }: { onClose: () => void }) {
             </div>
           </div>
         </div>
-
         {isAdmin ? (
           <div className="space-y-3">
             {tab === "change" ? (
@@ -253,49 +249,57 @@ function ShellInner({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-border shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between gap-3">
-          <button onClick={() => go("home")} aria-label="Home" className="shrink-0">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-border shadow-sm">
+        {/* کانتینر عریض‌تر شده تا همه ۱۳ گزینه جا شوند */}
+        <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-4 h-14 flex items-center justify-between gap-1.5">
+          
+          {/* ۱. لوگو */}
+          <button onClick={() => go("home")} aria-label="Home" className="shrink-0 mr-1">
             <Logo />
           </button>
 
-          {/* Desktop nav */}
-          <nav aria-label="Main navigation" className="hidden xl:flex items-center gap-0.5">
+          {/* ۲. نوار دسکتاپ: فشرده، دارای اسکرول خودکار بدون بیرون‌زدگی */}
+          <nav
+            aria-label="Main navigation"
+            className="hidden xl:flex items-center gap-1 overflow-x-auto whitespace-nowrap py-1 scrollbar-none flex-1 justify-center min-w-0"
+          >
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
                 onClick={() => go(item.id)}
                 title={item.desc}
-                className={`px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-2 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 shrink-0 ${
                   route === item.id
-                    ? "bg-primary text-primary-foreground shadow"
-                    : "text-foreground/80 hover:bg-secondary"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-foreground/80 hover:bg-secondary hover:text-foreground"
                 }`}
               >
-                <item.icon className="w-4 h-4" />
-                {item.label}
+                <item.icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
               </button>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          {/* ۳. دکمه‌های سمت راست (ادمین و منوی همبرگری) */}
+          <div className="flex items-center gap-1.5 shrink-0">
             {ready && (
               <button
                 onClick={() => setAdminOpen(true)}
-                className={`shrink-0 inline-flex items-center gap-1.5 text-xs font-bold rounded-lg px-3 py-2 border transition-colors ${
+                className={`inline-flex items-center gap-1 text-xs font-bold rounded-lg px-2.5 py-1.5 border transition-colors ${
                   isAdmin
                     ? "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700"
                     : "bg-white text-foreground/80 border-border hover:bg-secondary"
                 }`}
                 title={isAdmin ? "Admin mode active" : "Log in as admin to edit"}
               >
-                <ShieldCheck className="w-4 h-4" />
-                {isAdmin ? "Admin" : "Admin"}
+                <ShieldCheck className="w-4 h-4 text-sky-500" />
+                <span>{isAdmin ? "Admin ✓" : "Admin"}</span>
               </button>
             )}
-            {/* Mobile hamburger */}
+
+            {/* دکمه همبرگری موبایل/تبلت */}
             <button
-              className="xl:hidden p-2 rounded-lg hover:bg-secondary"
+              className="xl:hidden p-1.5 rounded-lg hover:bg-secondary text-foreground"
               onClick={() => setOpen((v) => !v)}
               aria-label="Menu"
               aria-expanded={open}
@@ -305,23 +309,46 @@ function ShellInner({
           </div>
         </div>
 
+        {/* ۴. منوی بازشونده موبایل با طراحی دوتایی و دسترسی به تمام بخش‌ها */}
         {open && (
-          <nav className="xl:hidden border-t bg-white px-4 py-3 grid grid-cols-2 gap-2" aria-label="Mobile menu">
-            {NAV_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  go(item.id);
-                  setOpen(false);
-                }}
-                className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm font-medium ${
-                  route === item.id ? "bg-primary text-white" : "bg-secondary text-foreground"
-                }`}
-              >
-                <item.icon className="w-4 h-4" />
-                {item.label}
-              </button>
-            ))}
+          <nav className="xl:hidden border-t bg-white px-3 py-3 max-h-[85vh] overflow-y-auto shadow-xl" aria-label="Mobile menu">
+            <div className="grid grid-cols-2 gap-2 pb-3">
+              {NAV_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    go(item.id);
+                    setOpen(false);
+                  }}
+                  className={`flex items-center gap-2 px-2.5 py-2.5 rounded-lg text-xs font-semibold ${
+                    route === item.id ? "bg-primary text-white shadow-sm" : "bg-secondary/60 hover:bg-secondary text-foreground"
+                  }`}
+                >
+                  <item.icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* دکمه ورود ادمین در داخل منوی گوشی */}
+            {ready && (
+              <div className="pt-2 border-t">
+                <button
+                  onClick={() => {
+                    setAdminOpen(true);
+                    setOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold border ${
+                    isAdmin
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                      : "bg-slate-50 text-slate-700 border-border hover:bg-secondary"
+                  }`}
+                >
+                  <ShieldCheck className="w-4 h-4 text-primary" />
+                  <span>{isAdmin ? "پنل مدیریت فعال است" : "ورود به عنوان Admin"}</span>
+                </button>
+              </div>
+            )}
           </nav>
         )}
       </header>
