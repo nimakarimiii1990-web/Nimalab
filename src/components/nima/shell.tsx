@@ -30,6 +30,8 @@ import {
   X,
   Lock,
   LogOut,
+  Settings2,
+  FileStack,
 } from "lucide-react";
 import type { CatId } from "@/lib/nima-types";
 import { AuthProvider, useAuth } from "@/lib/auth";
@@ -69,6 +71,8 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "articles", label: "Articles 2024+", icon: BookOpenCheck, desc: "PubMed with Persian summaries" },
   { id: "news", label: "Lab News", icon: Newspaper, desc: "World laboratory news" },
   { id: "events", label: "Events", icon: CalendarDays, desc: "IVD events & exhibitions calendar" },
+  { id: "params", label: "Parameters", icon: Settings2, desc: "Device parameters" },
+  { id: "brochures", label: "Brochures", icon: FileStack, desc: "Kit & control brochures" },
   { id: "help", label: "Help", icon: HelpCircle, desc: "Install, offline, admin" },
 ];
 
@@ -250,102 +254,102 @@ function ShellInner({
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-border shadow-sm">
-          <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between gap-3">
-            <button onClick={() => go("home")} aria-label="Home" className="shrink-0">
-              <Logo />
-            </button>
+        <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between gap-3">
+          <button onClick={() => go("home")} aria-label="Home" className="shrink-0">
+            <Logo />
+          </button>
 
-            {/* Desktop nav */}
-            <nav aria-label="Main navigation" className="hidden xl:flex items-center gap-0.5">
-              {NAV_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => go(item.id)}
-                  title={item.desc}
-                  className={`px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-                    route === item.id
-                      ? "bg-primary text-primary-foreground shadow"
-                      : "text-foreground/80 hover:bg-secondary"
-                  }`}
-                >
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-
-            <div className="flex items-center gap-2">
-              {ready && (
-                <button
-                  onClick={() => setAdminOpen(true)}
-                  className={`shrink-0 inline-flex items-center gap-1.5 text-xs font-bold rounded-lg px-3 py-2 border transition-colors ${
-                    isAdmin
-                      ? "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700"
-                      : "bg-white text-foreground/80 border-border hover:bg-secondary"
-                  }`}
-                  title={isAdmin ? "Admin mode active" : "Log in as admin to edit"}
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  {isAdmin ? "Admin" : "Admin"}
-                </button>
-              )}
-              {/* Mobile hamburger */}
+          {/* Desktop nav */}
+          <nav aria-label="Main navigation" className="hidden xl:flex items-center gap-0.5">
+            {NAV_ITEMS.map((item) => (
               <button
-                className="xl:hidden p-2 rounded-lg hover:bg-secondary"
-                onClick={() => setOpen((v) => !v)}
-                aria-label="Menu"
-                aria-expanded={open}
+                key={item.id}
+                onClick={() => go(item.id)}
+                title={item.desc}
+                className={`px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                  route === item.id
+                    ? "bg-primary text-primary-foreground shadow"
+                    : "text-foreground/80 hover:bg-secondary"
+                }`}
               >
-                {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                <item.icon className="w-4 h-4" />
+                {item.label}
               </button>
-            </div>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            {ready && (
+              <button
+                onClick={() => setAdminOpen(true)}
+                className={`shrink-0 inline-flex items-center gap-1.5 text-xs font-bold rounded-lg px-3 py-2 border transition-colors ${
+                  isAdmin
+                    ? "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700"
+                    : "bg-white text-foreground/80 border-border hover:bg-secondary"
+                }`}
+                title={isAdmin ? "Admin mode active" : "Log in as admin to edit"}
+              >
+                <ShieldCheck className="w-4 h-4" />
+                {isAdmin ? "Admin" : "Admin"}
+              </button>
+            )}
+            {/* Mobile hamburger */}
+            <button
+              className="xl:hidden p-2 rounded-lg hover:bg-secondary"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Menu"
+              aria-expanded={open}
+            >
+              {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
+        </div>
 
-          {open && (
-            <nav className="xl:hidden border-t bg-white px-4 py-3 grid grid-cols-2 gap-2" aria-label="Mobile menu">
-              {NAV_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    go(item.id);
-                    setOpen(false);
-                  }}
-                  className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm font-medium ${
-                    route === item.id ? "bg-primary text-white" : "bg-secondary text-foreground"
-                  }`}
-                >
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-          )}
-        </header>
-
-        <main className="flex-1">{children}</main>
-
-        <footer className="mt-auto border-t bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-6 pb-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <FlaskConical className="w-4 h-4 text-primary" />
-              <span>
-                <b className="text-primary">Nima</b> — Laboratory Companion | v1.1
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <button onClick={() => go("help")} className="hover:text-primary">
-                Help & Offline
+        {open && (
+          <nav className="xl:hidden border-t bg-white px-4 py-3 grid grid-cols-2 gap-2" aria-label="Mobile menu">
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  go(item.id);
+                  setOpen(false);
+                }}
+                className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm font-medium ${
+                  route === item.id ? "bg-primary text-white" : "bg-secondary text-foreground"
+                }`}
+              >
+                <item.icon className="w-4 h-4" />
+                {item.label}
               </button>
-              <button onClick={() => go("articles")} className="hover:text-primary">
-                Articles
-              </button>
-              <span className="text-xs opacity-70">Data stays on your device</span>
-            </div>
+            ))}
+          </nav>
+        )}
+      </header>
+
+      <main className="flex-1">{children}</main>
+
+      <footer className="mt-auto border-t bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-6 pb-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="w-4 h-4 text-primary" />
+            <span>
+              <b className="text-primary">Nima</b> — Laboratory Companion | v1.1
+            </span>
           </div>
-        </footer>
+          <div className="flex items-center gap-4">
+            <button onClick={() => go("help")} className="hover:text-primary">
+              Help & Offline
+            </button>
+            <button onClick={() => go("articles")} className="hover:text-primary">
+              Articles
+            </button>
+            <span className="text-xs opacity-70">Data stays on your device</span>
+          </div>
+        </div>
+      </footer>
 
-        {adminOpen && <AdminDialog onClose={() => setAdminOpen(false)} />}
-      </div>
+      {adminOpen && <AdminDialog onClose={() => setAdminOpen(false)} />}
+    </div>
   );
 }
 
