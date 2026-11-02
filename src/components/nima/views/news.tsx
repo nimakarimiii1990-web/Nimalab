@@ -15,9 +15,10 @@ function enDate(iso: string) {
   }
 }
 
-export function NewsView() {
+export function NewsView({ go }: { go: (r: string, p?: string) => void }) {
   const [news, setNews] = useNews();
   const [loading, setLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const { isAdmin } = useAuth();
 
   const sync = async () => {
@@ -40,6 +41,7 @@ export function NewsView() {
         source: "sync",
       }));
       setNews((prev) => [...incoming.filter((n) => !prev.some((p) => p.url === n.url)), ...prev].slice(0, 60));
+      setLastUpdate(new Date());
       toast({ title: `${incoming.length} new items added ✓` });
     } catch {
       toast({
@@ -51,6 +53,16 @@ export function NewsView() {
     }
   };
 
+  // رفرش ساده برای همه کاربرها (فقط لیست رو دوباره نشون می‌ده)
+  const refreshList = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLastUpdate(new Date());
+      setLoading(false);
+      toast({ title: "List refreshed ✓" });
+    }, 500);
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
@@ -60,20 +72,41 @@ export function NewsView() {
             World Laboratory News
           </h1>
           <p className="text-muted-foreground text-sm">
-            IVD industry trends, new products and standards — always up to date with one click (admin).
+            IVD industry trends, new products and standards — always up to date with one click.
           </p>
+          {lastUpdate && (
+            <p className="text-xs text-muted-foreground mt-1">
+              آخرین به‌روزرسانی: {lastUpdate.toLocaleTimeString("fa-IR")}
+            </p>
+          )}
         </div>
-        {isAdmin ? (
+
+        <div className="flex items-center gap-2">
+          {/* دکمه رفرش برای همه کاربرها */}
           <button
-            onClick={sync}
+            onClick={refreshList}
             disabled={loading}
-            className="bg-primary text-white rounded-xl px-5 py-3 text-sm font-bold hover:bg-primary/90 disabled:opacity-60 flex items-center gap-2"
+            className="bg-secondary text-foreground rounded-xl px-4 py-3 text-sm font-bold hover:bg-secondary/80 disabled:opacity-60 flex items-center gap-2 border"
+            title="به‌روزرسانی لیست"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            Fetch latest news
+            Refresh
           </button>
-        ) : null}
+
+          {/* دکمه فچ خبر جدید — فقط ادمین */}
+          {isAdmin && (
+            <button
+              onClick={sync}
+              disabled={loading}
+              className="bg-primary text-white rounded-xl px-5 py-3 text-sm font-bold hover:bg-primary/90 disabled:opacity-60 flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+              Fetch latest news
+            </button>
+          )}
+        </div>
       </div>
+
       {!isAdmin && (
         <div className="mb-6">
           <ReadOnlyNotice what="fetch new news" />

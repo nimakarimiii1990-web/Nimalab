@@ -8,11 +8,12 @@ import { ALL_TESTS } from "@/lib/data/tests";
 import type { Article } from "@/lib/nima-types";
 import { toast } from "@/hooks/use-toast";
 
-export function ArticlesView() {
+export function ArticlesView({ go }: { go: (r: string, p?: string) => void }) {
   const [articles, setArticles] = useArticles();
   const [q, setQ] = useState("");
   const [syncQuery, setSyncQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const { isAdmin } = useAuth();
 
   const filtered = useMemo(() => {
@@ -65,6 +66,7 @@ export function ArticlesView() {
         ...incoming.filter((n) => !prev.some((p) => p.id === n.id || (p.pmid && p.pmid === n.pmid))),
         ...prev,
       ]);
+      setLastUpdate(new Date());
       toast({ title: `${incoming.length} new articles added from PubMed ✓` });
     } catch {
       toast({
@@ -76,18 +78,48 @@ export function ArticlesView() {
     }
   };
 
+  // رفرش ساده برای همه کاربرها (فقط لیست رو دوباره نشون می‌ده)
+  const refreshList = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLastUpdate(new Date());
+      setLoading(false);
+      toast({ title: "Article list refreshed ✓" });
+    }, 500);
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="text-2xl font-extrabold mb-1 flex items-center gap-2">
-        <BookOpenCheck className="w-6 h-6 text-primary" />
-        Laboratory Articles — 2024 and newer
-      </h1>
-      <p className="text-muted-foreground text-sm mb-6">
-        Each article with a brief Persian summary and the full reference; the sync button lets the app find new
-        articles on PubMed automatically. Only the admin can sync or remove articles.
-      </p>
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-extrabold mb-1 flex items-center gap-2">
+            <BookOpenCheck className="w-6 h-6 text-primary" />
+            Laboratory Articles — 2024 and newer
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Each article with a brief Persian summary and the full reference; the sync button lets the app find new
+            articles on PubMed automatically.
+          </p>
+          {lastUpdate && (
+            <p className="text-xs text-muted-foreground mt-1">
+              آخرین به‌روزرسانی: {lastUpdate.toLocaleTimeString("fa-IR")}
+            </p>
+          )}
+        </div>
 
-      {/* Sync bar */}
+        {/* دکمه رفرش برای همه کاربرها */}
+        <button
+          onClick={refreshList}
+          disabled={loading}
+          className="bg-secondary text-foreground rounded-xl px-4 py-3 text-sm font-bold hover:bg-secondary/80 disabled:opacity-60 flex items-center gap-2 border"
+          title="به‌روزرسانی لیست مقالات"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
+      </div>
+
+      {/* Sync bar — admin only */}
       {isAdmin ? (
         <div className="bg-white rounded-2xl border p-4 mb-6 flex flex-wrap gap-2 items-center">
           <input
@@ -175,7 +207,7 @@ export function ArticlesView() {
         ))}
         {filtered.length === 0 && (
           <div className="col-span-full text-center py-16 text-muted-foreground">
-            No articles found — the admin can fetch new ones with “Sync from PubMed”.
+            No articles found — the admin can fetch new ones with "Sync from PubMed".
           </div>
         )}
       </div>

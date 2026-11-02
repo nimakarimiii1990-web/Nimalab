@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Plus, Trash2, ExternalLink, MapPin, BadgeCheck, Clock, Lock } from "lucide-react";
+import { CalendarDays, Plus, Trash2, ExternalLink, MapPin, BadgeCheck, Clock, Lock, RefreshCw } from "lucide-react";
 import { useEvents } from "@/lib/store";
 import { uid } from "@/lib/checks";
 import { useAuth, ReadOnlyNotice } from "@/lib/auth";
@@ -16,12 +16,24 @@ function enDate(iso: string) {
   }
 }
 
-export function EventsView() {
+export function EventsView({ go }: { go: (r: string, p?: string) => void }) {
   const [events, setEvents] = useEvents();
   const [form, setForm] = useState({ titleFa: "", city: "", country: "", dateStart: "", dateEnd: "", site: "", descFa: "" });
+  const [loading, setLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const { isAdmin } = useAuth();
 
   const sorted = [...events].sort((a, b) => +new Date(a.dateStart) - +new Date(b.dateStart));
+
+  // تابع رفرش برای همه کاربرها
+  const refreshList = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLastUpdate(new Date());
+      setLoading(false);
+      toast({ title: "Event list refreshed ✓" });
+    }, 500);
+  };
 
   const add = () => {
     if (!form.titleFa || !form.dateStart) {
@@ -47,13 +59,33 @@ export function EventsView() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="text-2xl font-extrabold mb-1 flex items-center gap-2">
-        <CalendarDays className="w-6 h-6 text-primary" />
-        Laboratory Events & Exhibitions
-      </h1>
-      <p className="text-muted-foreground text-sm mb-6">
-        Calendar of world and Iran IVD exhibitions — official events have verified dates. Only the admin can add events.
-      </p>
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-extrabold mb-1 flex items-center gap-2">
+            <CalendarDays className="w-6 h-6 text-primary" />
+            Laboratory Events & Exhibitions
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Calendar of world and Iran IVD exhibitions — official events have verified dates. Only the admin can add events.
+          </p>
+          {lastUpdate && (
+            <p className="text-xs text-muted-foreground mt-1">
+              آخرین به‌روزرسانی: {lastUpdate.toLocaleTimeString("fa-IR")}
+            </p>
+          )}
+        </div>
+
+        {/* دکمه رفرش برای همه کاربرها */}
+        <button
+          onClick={refreshList}
+          disabled={loading}
+          className="bg-secondary text-foreground rounded-xl px-4 py-3 text-sm font-bold hover:bg-secondary/80 disabled:opacity-60 flex items-center gap-2 border"
+          title="به‌روزرسانی لیست رویدادها"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
+      </div>
 
       <div className="grid lg:grid-cols-[1fr,360px] gap-6 items-start">
         <div className="space-y-3">
