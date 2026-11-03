@@ -608,5 +608,10 @@ function restore(input){
 
 renderAll();
 </script>
+<script>
+if (new URLSearchParams(location.search).get("embed") === "1") {
+  document.querySelector(".nav")?.style && (document.querySelector(".nav").style.display = "none");
+}
+</script>
 </body>
 </html>
