@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Internal Quality Control (IQC) | Nima Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============ THEME — to perfectly match your site, edit only these lines ============ */
+:root{
+  --primary:#1d6ac1;                            /* your site's blue */
+  --bg:#f8fafc; --card:#ffffff; --line:#e2e8f0;
+  --txt:#0f172a; --mut:#64748b;
+  --ok:#16a34a; --warn:#d97706; --bad:#dc2626;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(15,23,42,.06),0 1px 3px rgba(15,23,42,.08);
+  --font:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+}
+/* ===================================================================================== */
+*{box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);margin:0;padding-bottom:60px}
+.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:1120px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px}
+.brand-t b{display:block;font-size:16px;color:var(--primary);line-height:1.1}
+.brand-t small{display:block;font-size:8.5px;letter-spacing:1.6px;color:var(--mut);font-weight:600}
+.nav-r{display:flex;align-items:center;gap:6px}
+.nav-r a{color:var(--mut);text-decoration:none;font-size:13px;font-weight:500;padding:7px 13px;border-radius:99px}
+.nav-r a:hover{background:#f1f5f9;color:var(--txt)}
+.nav-r a.active{background:var(--primary);color:#fff;font-weight:600}
+.page-head{max-width:1120px;margin:0 auto;padding:26px 20px 4px}
+.page-head h1{margin:0 0 6px;font-size:23px;font-weight:700;display:flex;align-items:center;gap:9px}
+.page-head h1 .ic{color:var(--primary)}
+.page-head p{margin:0;color:var(--mut);font-size:13.5px}
+.wrap{max-width:1120px;margin:20px auto 0;padding:0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h2{font-size:14.5px;margin:0 0 14px;display:flex;align-items:center;gap:8px;font-weight:700}
+.card h2 .hint{font-weight:400;font-size:12px;color:var(--mut)}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.card-h h2{margin:0}
+input,select,button{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;width:100%;background:#fff;color:var(--txt)}
+input::placeholder{color:#94a3b8}
+input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(29,106,193,.15)}
+button{cursor:pointer;transition:.15s}
+.btn{background:var(--primary);color:#fff;border:none;font-weight:600}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:#fff;color:var(--txt);border:1px solid var(--line)}
+.btn.ghost:hover{background:#f1f5f9;filter:none}
+.btn.red{background:#fff;color:var(--bad);border:1px solid #fecaca}
+.btn.red:hover{background:#fef2f2;filter:none}
+.btn.sm{width:auto;padding:6px 13px;font-size:12.5px;border-radius:9px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.row>div{flex:1;min-width:150px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;box-shadow:var(--shadow);flex:1;min-width:120px;border-top:3px solid var(--primary)}
+.stat small{color:var(--mut);font-size:12px;font-weight:600}
+.stat b{display:block;font-size:21px;margin:3px 0 2px;font-weight:700}
+.stat .sub{font-size:11px;font-weight:400}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+th{background:#f8fafc;color:var(--mut);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px}
+tbody tr:hover{background:#f8fafc}
+.badge{padding:3px 11px;border-radius:99px;font-size:12px;font-weight:600;background:#f1f5f9;color:#475569;display:inline-block}
+.b-ok{background:#dcfce7;color:var(--ok)}.b-warn{background:#fef3c7;color:var(--warn)}.b-bad{background:#fee2e2;color:var(--bad)}
+.muted{color:var(--mut);font-size:13px}
+.chart-wrap{direction:ltr;overflow-x:auto;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.empty{padding:26px;text-align:center;color:var(--mut);font-size:13.5px}
+.note{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:9px;padding:8px 12px;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in">
+  <a class="brand" href="/"><span class="logo">🧪</span><span class="brand-t"><b>Nima</b><small>LAB COMPANION</small></span></a>
+  <div class="nav-r"><a href="/">← Back to site</a><a class="active" href="#top">Quality Control</a></div>
+</div></nav>
+
+<div class="page-head" id="top">
+  <h1><span class="ic">📈</span> Internal Quality Control (IQC)</h1>
+  <p>Levey-Jennings chart with Westgard rules (1-2s, 1-3s, 2-2s, R-4s, 3-1s, 4-1s, 10x) and the sigma metric — data is stored on your own device. Mean, SD, CV% and Bias% are calculated automatically; you only enter the daily values.</p>
+</div>
+
+<div class="wrap">
+
+<div class="card">
+  <h2>🧪 New QC series <span class="hint">— the full catalog of <b id="catCount"></b> QC-able tests of your program is built in; set up each analyte once per control level</span></h2>
+  <div class="grid2" style="margin-bottom:12px">
+    <select id="tCat" onchange="fillDatalist()"></select>
+    <input id="tName" list="testList" placeholder="Analyte name — type to search all tests (e.g. Glucose, TSH, Troponin I)">
+  </div>
+  <datalist id="testList"></datalist>
+  <div class="grid2" style="margin-bottom:12px">
+    <input id="tUnit" placeholder="Unit (e.g. mg/dL)">
+    <select id="tLevel"><option value="1">Normal (Level 1)</option><option value="2">Pathological (Level 2)</option></select>
+  </div>
+  <div class="grid2" style="margin-bottom:12px">
+    <input id="tMean" type="number" step="any" placeholder="Target Mean — from control insert (optional)">
+    <input id="tSD" type="number" step="any" placeholder="Target SD — from control insert (optional)">
+  </div>
+  <div class="row" style="margin-bottom:12px">
+    <div><input id="tTea" type="number" step="any" placeholder="TEa % — for sigma (auto-filled, editable)"></div>
+    <div class="note" style="flex:1.4">Pick an analyte from the catalog → unit and TEa % (where a CLIA limit exists) fill automatically. Bias %, CV %, Mean and SD are calculated from your daily results.</div>
+  </div>
+  <button class="btn" onclick="addTest()">+ Create series</button>
+  <div id="testsTable" style="margin-top:14px"></div>
+</div>
+
+<div class="card">
+  <h2>➕ Add daily result</h2>
+  <div class="row">
+    <div><select id="tid"></select></div>
+    <div><input id="eDate" type="date"></div>
+    <div><input id="eVal" type="number" step="any" placeholder="Measured control value"></div>
+    <div style="flex:0"><button class="btn" onclick="addEntry()">+ Add result</button></div>
+    <div style="flex:0"><button class="btn ghost" onclick="demo()">Add 20 demo points</button></div>
+  </div>
+</div>
+
+<div class="card" id="statsCard">
+  <div class="card-h">
+    <h2>📊 Auto-calculated statistics</h2>
+    <div class="row" style="gap:8px">
+      <div style="min-width:170px"><select id="win" onchange="renderAll()">
+        <option value="20">Last 20 points</option><option value="30">Last 30 points</option><option value="all">All data</option>
+      </select></div>
+      <button class="btn ghost sm" style="padding:10px 13px" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn ghost sm" style="padding:10px 13px" onclick="backup()">💾 Backup</button>
+      <button class="btn ghost sm" style="padding:10px 13px" onclick="$('restoreFile').click()">⬆ Restore</button>
+      <button class="btn red sm" style="padding:10px 13px" onclick="clearData()">Clear data</button>
+    </div>
+  </div>
+  <div id="stats" class="row"></div>
+  <p class="muted" id="calcNote" style="margin:12px 0 0"></p>
+</div>
+
+<div class="card">
+  <h2>📈 Levey-Jennings chart</h2>
+  <div id="chart" class="chart-wrap"></div>
+  <p class="muted" style="margin:10px 0 0">Hover a point for details — 🟢 Accept &nbsp;·&nbsp; 🟠 Warning (1-2s) &nbsp;·&nbsp; 🔴 Reject (Westgard violation)</p>
+</div>
+
+<div class="card">
+  <h2>🧾 Recent results &amp; Westgard rules</h2>
+  <div class="tbl"><div id="ptable"></div></div>
+</div>
+
+</div>
+
+<input type="file" id="restoreFile" accept=".json,application/json" style="display:none" onchange="restore(this)">
+
+<script>
+const KEY='nimalab_iqc_v1';
+const CATL={biochem:"Biochemistry & Electrolytes",enzyme:"Enzymes",cardiac:"Cardiac Markers",hormone:"Hormones & Endocrine",hematology:"Hematology (CBC)",coag:"Coagulation",immuno:"Immunology & Autoimmune",viral:"Virology & Serology",micro:"Microbiology",molecular:"Molecular & Genetics",tumor:"Tumor Markers",urine:"Urine & Stool",tox:"Toxicology & Drug Levels",bank:"Blood Bank"};
+const CAT=[
+["25-Hydroxy Vitamin D","ng/mL","biochem"],
+["2h OGTT Glucose","mg/dL","biochem"],
+["Albumin","g/dL","biochem",10],
+["Ammonia","µg/dL","biochem"],
+["Anion Gap (calc)","mEq/L","biochem"],
+["Apo A1","mg/dL","biochem"],
+["Apo B","mg/dL","biochem"],
+["Arterial HCO3","mEq/L","biochem"],
+["Arterial pCO2","mmHg","biochem"],
+["Arterial pO2","mmHg","biochem"],
+["Beta-2 Microglobulin","mg/L","biochem"],
+["Beta-Hydroxybutyrate","mg/dL","biochem"],
+["Blood Urea Nitrogen","mg/dL","biochem",9],
+["C-Peptide","ng/mL","biochem"],
+["C-Reactive Protein","mg/L","biochem",25],
+["Calcium (Total)","mg/dL","biochem",10],
+["Ceruloplasmin","mg/dL","biochem"],
+["Chloride (Cl)","mEq/L","biochem"],
+["CO2 (Bicarbonate)","mEq/L","biochem"],
+["Copper","µg/dL","biochem"],
+["Corrected Ca (calc)","mg/dL","biochem"],
+["Corrected Na (calc)","mEq/L","biochem"],
+["Creatinine","mg/dL","biochem",15],
+["Cystatin C","mg/L","biochem"],
+["Direct Bilirubin","mg/dL","biochem",20],
+["Direct LDL-C","mg/dL","biochem"],
+["eGFR CKD-EPI 2021","mL/min/1.73m²","biochem"],
+["Fasting Glucose","mg/dL","biochem",10],
+["Fasting Insulin","µIU/mL","biochem"],
+["Ferritin","ng/mL","biochem",20],
+["Folate","ng/mL","biochem"],
+["Free Kappa Light Chain","mg/L","biochem"],
+["Free Lambda Light Chain","mg/L","biochem"],
+["Fructosamine","µmol/L","biochem"],
+["HbA1c","%","biochem",6],
+["HDL Cholesterol","mg/dL","biochem",30],
+["Homocysteine","µmol/L","biochem"],
+["hs-CRP","mg/L","biochem"],
+["Ionized Calcium","mmol/L","biochem"],
+["Lactate","mmol/L","biochem"],
+["LDL-C calculated","mg/dL","biochem",12],
+["Lipoprotein(a)","mg/dL","biochem"],
+["Magnesium (Mg)","mg/dL","biochem"],
+["Methylmalonic Acid","nmol/L","biochem"],
+["non-HDL-C","mg/dL","biochem"],
+["Osmolar Gap (calc)","mOsm/kg","biochem"],
+["Phosphorus (P)","mg/dL","biochem"],
+["Potassium (K)","mEq/L","biochem",6],
+["Prealbumin","mg/dL","biochem"],
+["Procalcitonin","ng/mL","biochem"],
+["Serum Iron","µg/dL","biochem"],
+["Serum Osmolality","mOsm/kg","biochem"],
+["Sodium (Na)","mEq/L","biochem",3],
+["SPEP","g/dL","biochem"],
+["Total Bilirubin","mg/dL","biochem",20],
+["Total Cholesterol","mg/dL","biochem",10],
+["Total Iron Binding Capacity","µg/dL","biochem"],
+["Total Protein","g/dL","biochem",10],
+["Transferrin","mg/dL","biochem"],
+["Triglycerides","mg/dL","biochem",25],
+["Unsaturated Iron Binding Capacity","µg/dL","biochem"],
+["Uric Acid","mg/dL","biochem",17],
+["Vitamin B12","pg/mL","biochem"],
+["VLDL-C","mg/dL","biochem"],
+["Zinc","µg/dL","biochem"],
+["5'-Nucleotidase","U/L","enzyme"],
+["Alanine Aminotransferase","U/L","enzyme",20],
+["Alkaline Phosphatase","U/L","enzyme",30],
+["ALP Isoenzymes","U/L","enzyme"],
+["Amylase","U/L","enzyme"],
+["Angiotensin Converting Enzyme","U/L","enzyme"],
+["Aspartate Aminotransferase","U/L","enzyme",20],
+["Gamma-Glutamyl Transferase","U/L","enzyme",20],
+["Lactate Dehydrogenase","U/L","enzyme"],
+["Lipase","U/L","enzyme"],
+["Pseudocholinesterase","U/L","enzyme"],
+["B-type Natriuretic Peptide","pg/mL","cardiac"],
+["CK-MB Mass","ng/mL","cardiac"],
+["Creatine Kinase","U/L","cardiac"],
+["High-Sensitivity Troponin T","ng/L","cardiac"],
+["Myoglobin","ng/mL","cardiac"],
+["NT-proBNP","pg/mL","cardiac"],
+["Troponin I","ng/mL","cardiac"],
+["17-Hydroxyprogesterone","ng/dL","hormone"],
+["Adrenocorticotropic Hormone","pg/mL","hormone"],
+["Aldosterone","ng/dL","hormone"],
+["Androstenedione","ng/dL","hormone"],
+["Anti-Müllerian Hormone","ng/mL","hormone"],
+["Anti-Thyroglobulin (TG-Ab)","IU/mL","hormone"],
+["Anti-TPO Antibody","IU/mL","hormone"],
+["Beta-hCG Quantitative","mIU/mL","hormone"],
+["Calcitonin","pg/mL","hormone"],
+["Cortisol (4 PM)","µg/dL","hormone"],
+["Cortisol (8 AM)","µg/dL","hormone"],
+["DHEA Sulfate","µg/dL","hormone"],
+["Estradiol (E2)","pg/mL","hormone"],
+["Follicle Stimulating Hormone","mIU/mL","hormone"],
+["Free T3","pg/mL","hormone"],
+["Free T4","ng/dL","hormone"],
+["Free Testosterone","pg/mL","hormone"],
+["Growth Hormone","ng/mL","hormone"],
+["Inhibin B","pg/mL","hormone"],
+["Insulin-like Growth Factor 1","ng/mL","hormone"],
+["Intact PTH","pg/mL","hormone"],
+["Luteinizing Hormone","mIU/mL","hormone"],
+["Osteocalcin","ng/mL","hormone"],
+["Progesterone","ng/mL","hormone"],
+["Prolactin","ng/mL","hormone"],
+["Renin Activity","ng/mL/h","hormone"],
+["Sex Hormone Binding Globulin","nmol/L","hormone"],
+["Thyroglobulin","ng/mL","hormone"],
+["Thyroid Stimulating Hormone","mIU/L","hormone",20],
+["Total T3","ng/dL","hormone"],
+["Total T4","µg/dL","hormone",13],
+["Total Testosterone","ng/dL","hormone"],
+["TSH Receptor Antibody","IU/L","hormone"],
+["Basophils","%","hematology"],
+["Carboxyhemoglobin","%","hematology"],
+["CD4/CD8 Subset","cells/µL","hematology"],
+["Eosinophils","%","hematology"],
+["Erythrocyte Sedimentation Rate","mm/h","hematology"],
+["Fetal Hemoglobin","%","hematology"],
+["G6PD Assay","U/g Hb","hematology"],
+["Hematocrit","%","hematology",6],
+["Hemoglobin","g/dL","hematology",7],
+["Hemoglobin A2","%","hematology"],
+["Hemoglobin Electrophoresis","%","hematology"],
+["Lymphocytes","%","hematology"],
+["Mean Corpuscular Hemoglobin","pg","hematology"],
+["Mean Corpuscular Hemoglobin Concentration","g/dL","hematology"],
+["Mean Corpuscular Volume","fL","hematology"],
+["Mean Platelet Volume","fL","hematology"],
+["Methemoglobin","%","hematology"],
+["Monocytes","%","hematology"],
+["Neutrophils","%","hematology"],
+["Osmotic Fragility","%","hematology"],
+["Platelet Count","×10³/µL","hematology",25],
+["Platelet Function (PFA-100)","ثانیه","hematology"],
+["RBC Count","×10⁶/µL","hematology",6],
+["Red Cell Distribution Width","%","hematology"],
+["Reticulocyte Count","%","hematology"],
+["WBC Count","×10³/µL","hematology",15],
+["Anti-Xa Heparin Level","IU/mL","coag"],
+["Antithrombin III","%","coag"],
+["Bleeding Time","دقیقه","coag"],
+["D-dimer","µg/mL FEU","coag"],
+["Factor Assay","%","coag"],
+["Fibrin Degradation Products","µg/mL","coag"],
+["Fibrinogen","mg/dL","coag"],
+["Lupus Anticoagulant","نسبت","coag"],
+["Partial Thromboplastin Time","ثانیه","coag"],
+["Plasminogen","%","coag"],
+["Platelet Aggregation","%","coag"],
+["Protein C","%","coag"],
+["Protein S","%","coag"],
+["Prothrombin Time","ثانیه","coag"],
+["Thrombin Time","ثانیه","coag"],
+["ANCA Profile","U/mL","immuno"],
+["Anti-Beta2 Glycoprotein I","U/mL","immuno"],
+["Anti-Cardiolipin IgG/IgM","GPL/MPL","immuno"],
+["Anti-Cyclic Citrullinated Peptide","U/mL","immuno"],
+["Anti-DNase B","IU/mL","immuno"],
+["Anti-dsDNA","IU/mL","immuno"],
+["Anti-Endomysial Antibody","تیتر","immuno"],
+["Anti-GAD65 Antibody","U/mL","immuno"],
+["Anti-Mitochondrial Antibody","تیتر","immuno"],
+["Anti-Smooth Muscle Antibody","تیتر","immuno"],
+["Anti-Tissue Transglutaminase IgA","U/mL","immuno"],
+["Antinuclear Antibody","تیتر","immuno"],
+["Antistreptolysin O","IU/mL","immuno"],
+["Cold Agglutinin","تیتر","immuno"],
+["Complement C3","mg/dL","immuno"],
+["Complement C4","mg/dL","immuno"],
+["Rheumatoid Factor","IU/mL","immuno"],
+["Specific IgE Panel","kU/L","immuno"],
+["Total Hemolytic Complement","U/mL","immuno"],
+["Total IgE","IU/mL","immuno"],
+["Weil-Felix Test","تیتر","immuno"],
+["Widal Test","تیتر","immuno"],
+["Wright Test","تیتر","immuno"],
+["Anti-HBs Antibody","mIU/mL","viral"],
+["CMV DNA Quantitative","copies/mL","viral"],
+["CMV IgG","U/mL","viral"],
+["CMV IgG Avidity","%","viral"],
+["EBV DNA Quantitative","copies/mL","viral"],
+["EBV VCA IgG","U/mL","viral"],
+["HBV DNA Viral Load","IU/mL","viral"],
+["HCV Antibody","S/CO","viral"],
+["HCV RNA Viral Load","IU/mL","viral"],
+["HIV 4th Gen Ag/Ab","S/CO","viral"],
+["HIV-1 RNA Viral Load","copies/mL","viral"],
+["Rubella IgG","IU/mL","viral"],
+["Rubella IgG Avidity","%","viral"],
+["SARS-CoV-2 RT-PCR","Ct","viral"],
+["Toxoplasma IgG","IU/mL","viral"],
+["Varicella Zoster IgG","U/mL","viral"],
+["Beta-D-Glucan","pg/mL","micro"],
+["Leishmania DAT","تیتر","micro"],
+["Rapid Plasma Reagin","تیتر","micro"],
+["Treponema Pallidum Particle Agglutination","تیتر","micro"],
+["Tuberculin Skin Test","mm ایندوراسیون","micro"],
+["Urea Breath Test","DOB","micro"],
+["Urine Culture","CFU/mL","micro"],
+["BCR-ABL1 Quantitative","%IS","molecular"],
+["FMR1 CGG Repeat","کپی","molecular"],
+["HBV DNA Quantitative","IU/mL","molecular"],
+["HCV RNA Quantitative","IU/mL","molecular"],
+["MLPA Copy Number","کپی","molecular"],
+["Alpha-Fetoprotein","ng/mL","tumor"],
+["Beta-2 Microglobulin (prognosis)","mg/L","tumor"],
+["Beta-hCG (tumor marker)","mIU/mL","tumor"],
+["Calcitonin (MTC marker)","pg/mL","tumor"],
+["Cancer Antigen 125","U/mL","tumor"],
+["Cancer Antigen 15-3","U/mL","tumor"],
+["Carbohydrate Antigen 19-9","U/mL","tumor"],
+["Carcinoembryonic Antigen","ng/mL","tumor"],
+["Chromogranin A","ng/mL","tumor"],
+["Cytokeratin 19 Fragment","ng/mL","tumor"],
+["Free PSA","ng/mL","tumor"],
+["Human Epididymis Protein 4","pmol/L","tumor"],
+["Neuron Specific Enolase","ng/mL","tumor"],
+["Pro-gastrin Releasing Peptide","pg/mL","tumor"],
+["Prostate Specific Antigen","ng/mL","tumor"],
+["S100 Protein","µg/L","tumor"],
+["Squamous Cell Carcinoma Antigen","ng/mL","tumor"],
+["24h 5-HIAA","mg/24h","urine"],
+["24h Creatinine Clearance","mL/min","urine"],
+["24h Urine Calcium","mg/24h","urine"],
+["24h Urine Citrate","mg/24h","urine"],
+["24h Urine Oxalate","mg/24h","urine"],
+["24h Urine Protein","mg/24h","urine"],
+["24h Urine Uric Acid","mg/24h","urine"],
+["24h Vanillylmandelic Acid","mg/24h","urine"],
+["Fecal Calprotectin","µg/g","urine"],
+["Fecal Fat","g/24h","urine"],
+["Metanephrines","µg/24h","urine"],
+["Urine Albumin/Creatinine Ratio","mg/g","urine"],
+["Urine Blood","RBC/HPF","urine"],
+["Urine Culture & Sensitivity","CFU/mL","urine"],
+["Urine Microalbumin","mg/L","urine"],
+["Urine Microscopy","/HPF","urine"],
+["Urine Osmolality","mOsm/kg","urine"],
+["Urine Potassium","mEq/L","urine"],
+["Urine Protein","mg/dL","urine"],
+["Urine Sodium","mEq/L","urine"],
+["Acetaminophen Level","µg/mL","tox"],
+["Amikacin Peak/Trough","µg/mL","tox"],
+["Arsenic Level","µg/L","tox"],
+["Blood Lead Level","µg/dL","tox"],
+["Carbamazepine Level","µg/mL","tox"],
+["Cyclosporine Trough","ng/mL","tox"],
+["Digoxin Level","ng/mL","tox"],
+["Ethanol Level","mg/dL","tox"],
+["Gentamicin Peak/Trough","µg/mL","tox"],
+["Lithium Level","mEq/L","tox"],
+["Mercury Level","µg/L","tox"],
+["Methotrexate Level","nmol/L","tox"],
+["Phenobarbital Level","µg/mL","tox"],
+["Phenytoin Level","µg/mL","tox"],
+["Salicylate Level","mg/dL","tox"],
+["Tacrolimus Trough","ng/mL","tox"],
+["Theophylline Level","µg/mL","tox"],
+["Valproic Acid Level","µg/mL","tox"],
+["Vancomycin Trough","µg/mL","tox"]
+];
+let DB=JSON.parse(localStorage.getItem(KEY)||'null')||{tests:[],entries:[]};
+const $=i=>document.getElementById(i);
+const save=()=>localStorage.setItem(KEY,JSON.stringify(DB));
+const fmt=(x,d=2)=>(x==null||isNaN(x))?'—':Number(x).toLocaleString('en-US',{maximumFractionDigits:d});
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>new Date().toISOString().slice(0,10);
+const cur=()=>DB.tests.find(t=>t.id===$('tid').value);
+const lvl=t=>t.level===1?'Normal (L1)':'Pathological (L2)';
+
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const NAME_MAP={};CAT.forEach(c=>{const k=c[0].toLowerCase();if(!NAME_MAP[k])NAME_MAP[k]={unit:c[1],cat:c[2],tea:c[3]||null};});
+ $('catCount').textContent=CAT.length;
+ $('tCat').innerHTML='<option value="">All categories — '+CAT.length+' tests</option>'+Object.keys(CATL).map(k=>`<option value="${k}">${CATL[k]} (${CAT.filter(x=>x[2]===k).length})</option>`).join('');
+function fillDatalist(){const c=$('tCat').value;$('testList').innerHTML=CAT.filter(x=>!c||x[2]===c).map(x=>`<option value="${esc(x[0])}">${CATL[x[2]]}</option>`).join('');}
+fillDatalist();
+ $('eDate').value=today();
+ $('tid').addEventListener('change',renderAll);
+ $('tName').addEventListener('input',e=>{const v=e.target.value.trim().toLowerCase();const m=NAME_MAP[v];if(m){$('tUnit').value=m.unit;$('tTea').value=m.tea||'';}});
+
+function addTest(){
+  const name=$('tName').value.trim();if(!name)return alert('Please enter the analyte name');
+  const level=+$('tLevel').value;
+  if(DB.tests.some(t=>t.name.toLowerCase()===name.toLowerCase()&&t.level===level))return alert('This series already exists');
+  DB.tests.push({id:uid(),name,unit:$('tUnit').value.trim(),level,targetMean:parseFloat($('tMean').value)||null,targetSD:parseFloat($('tSD').value)||null,tea:parseFloat($('tTea').value)||null});
+  save();$('tName').value='';$('tUnit').value='';$('tMean').value='';$('tSD').value='';$('tTea').value='';renderAll();
+}
+function delTest(id){if(!confirm('Delete this series and all of its data?'))return;DB.tests=DB.tests.filter(t=>t.id!==id);DB.entries=DB.entries.filter(e=>e.testId!==id);save();renderAll();}
+function selectSeries(id){$('tid').value=id;renderAll();$('statsCard').scrollIntoView({behavior:'smooth'});}
+function addEntry(){
+  const tid=$('tid').value;if(!tid)return alert('Create a series first');
+  const value=parseFloat($('eVal').value);if(isNaN(value))return alert('Enter a valid number');
+  DB.entries.push({id:uid(),testId:tid,date:$('eDate').value||today(),value});
+  save();$('eVal').value='';renderAll();
+}
+function delEntry(id){DB.entries=DB.entries.filter(e=>e.id!==id);save();renderAll();}
+function clearData(){const t=cur();if(!t)return;if(!confirm('Delete all data points of "'+t.name+'"?'))return;DB.entries=DB.entries.filter(e=>e.testId!==t.id);save();renderAll();}
+
+function stats(t){
+  const es=DB.entries.filter(e=>e.testId===t.id).sort((a,b)=>a.date<b.date?-1:1);
+  const w=$('win').value;const esw=w==='all'?es:es.slice(-parseInt(w));
+  const n=esw.length;const mean=n?esw.reduce((s,e)=>s+e.value,0)/n:null;
+  const sd=n>1?Math.sqrt(esw.reduce((s,e)=>s+(e.value-mean)**2,0)/(n-1)):null;
+  const useCalc=n>=20&&mean!=null&&sd!=null;
+  const mU=useCalc?mean:t.targetMean, sU=useCalc?sd:t.targetSD;
+  const cv=(mU&&sU!=null)?(sU/mU)*100:null;
+  const bias=(mean!=null&&t.targetMean)?((mean-t.targetMean)/t.targetMean)*100:null;
+  const sigma=(t.tea&&cv&&bias!=null&&cv>0)?(t.tea-Math.abs(bias))/cv:null;
+  return {es,n,mean,sd,cv,bias,sigma,mU,sU,useCalc};
+}
+function series(t){
+  const st=stats(t);const list=st.es.map(e=>({...e,z:(st.mU!=null&&st.sU)?(e.value-st.mU)/st.sU:null}));
+  return {st,list};
+}
+function ozMapFor(t){
+  const o=DB.tests.find(x=>x.name===t.name&&x.level!==t.level);if(!o)return{};
+  const mp={};series(o).list.forEach(p=>mp[p.date]=p.z);return mp;
+}
+function westgard(list,oz){
+  return list.map((p,i)=>{
+    const z=p.z;if(z==null)return{status:'—',rules:[]};
+    const rules=[];
+    if(Math.abs(z)>3)rules.push('1-3s');
+    const w12=Math.abs(z)>2;if(w12)rules.push('1-2s');
+    const p1=list[i-1];
+    if(p1&&p1.z!=null&&w12&&Math.abs(p1.z)>2&&Math.sign(z)===Math.sign(p1.z))rules.push('2-2s');
+    const ozv=oz[p.date];if(ozv!=null&&((z>2&&ozv<-2)||(z<-2&&ozv>2)))rules.push('R-4s');
+    if(i>=2){const a=[z,list[i-1].z,list[i-2].z];if(a.every(v=>v>1)||a.every(v=>v<-1))rules.push('3-1s');}
+    if(i>=3){const a=[z,list[i-1].z,list[i-2].z,list[i-3].z];if(a.every(v=>v>1)||a.every(v=>v<-1))rules.push('4-1s');}
+    if(i>=9){const a=list.slice(i-9,i+1).map(q=>q.z);if(a.every(v=>v>0)||a.every(v=>v<0))rules.push('10x');}
+    const bad=rules.some(r=>r!=='1-2s');
+    return{status:bad?'bad':(w12?'warn':'ok'),rules:bad?rules.filter(r=>r!=='1-2s'):rules};
+  });
+}
+
+function renderAll(){
+  const sel=$('tid').value;
+  $('tid').innerHTML=DB.tests.map(t=>`<option value="${t.id}">${t.name} — ${lvl(t)}${t.unit?' ('+t.unit+')':''}</option>`).join('');
+  if(sel&&DB.tests.some(t=>t.id===sel))$('tid').value=sel;
+  $('testsTable').innerHTML=DB.tests.length?
+    '<table><thead><tr><th>Analyte</th><th>Category</th><th>Level</th><th>Unit</th><th>Target Mean</th><th>Target SD</th><th>TEa %</th><th>Points</th><th></th></tr></thead><tbody>'+
+    DB.tests.map(t=>{const cx=NAME_MAP[t.name.toLowerCase()];return `<tr><td>${t.name}</td><td>${cx?CATL[cx.cat]:'—'}</td><td>${lvl(t)}</td><td>${t.unit||'—'}</td><td>${fmt(t.targetMean)}</td><td>${fmt(t.targetSD)}</td><td>${fmt(t.tea,1)}</td><td>${DB.entries.filter(e=>e.testId===t.id).length}</td><td><button class="btn ghost sm" onclick="selectSeries('${t.id}')">Open</button> <button class="btn red sm" onclick="delTest('${t.id}')">Delete</button></td></tr>`}).join('')+'</tbody></table>'
+    :'<div class="empty">No QC series yet.</div>';
+  const t=cur();
+  if(!t){$('stats').innerHTML='';$('chart').innerHTML='<div class="empty">Create a series to begin.</div>';$('ptable').innerHTML='<div class="empty">No data yet.</div>';$('calcNote').textContent='';return;}
+  const {st,list}=series(t);
+  const marks=westgard(list,ozMapFor(t));
+  marks.forEach((m,i)=>{list[i].status=m.status;list[i].rules=m.rules;});
+  window.CURLIST=list;
+  const stTxt={ok:'Accept',warn:'Warning',bad:'Reject','—':'—'};
+  const cards=[
+    ['Mean',fmt(st.mean),'average of window','#2563eb'],
+    ['SD',fmt(st.sd),st.useCalc?'Calculated (n−1)':(t.targetSD?'Target':'Need ≥2 points'),'#64748b'],
+    ['CV %',fmt(st.cv),st.cv==null?'':(st.cv<2?'✓ Excellent':st.cv<5?'Acceptable':'High'),'#16a34a'],
+    ['Bias %',fmt(st.bias),st.bias==null?'Needs target mean':'vs target mean','#d97706'],
+    ['TEa %',fmt(t.tea,1),t.tea?'':'Not set','#8b5cf6'],
+    ['Sigma',fmt(st.sigma),st.sigma==null?'':(st.sigma>=6?'⭐ World-class':st.sigma>=5?'Excellent':st.sigma>=4?'Good':st.sigma>=3?'Minimum':'Unacceptable'),'#0ea5e9']
+  ];
+  $('stats').innerHTML=cards.map(c=>`<div class="stat" style="border-top-color:${c[3]}"><small>${c[0]}</small><b>${c[1]}</b><small class="sub">${c[2]}</small></div>`).join('');
+  $('calcNote').textContent=`n = ${st.n} — Chart basis: ${st.useCalc?'Mean & SD calculated from your own data':'target Mean & SD from series settings (≥20 points are needed for auto-calculation)'}`;
+  renderChart(st,list);
+  $('ptable').innerHTML=list.length?
+    '<table><thead><tr><th>Date</th><th>Value</th><th>z-score</th><th>Rules triggered</th><th>Status</th><th></th></tr></thead><tbody>'+
+    list.slice(-30).reverse().map(p=>`<tr><td>${p.date}</td><td>${fmt(p.value)}</td><td>${fmt(p.z)}</td><td>${p.rules.length?p.rules.join(', '):'—'}</td><td><span class="badge b-${p.status}">${stTxt[p.status]}</span></td><td><button class="btn red sm" style="padding:2px 9px;font-size:11.5px" onclick="delEntry('${p.id}')">✕</button></td></tr>`).join('')+'</tbody></table>'
+    :'<div class="empty">No data yet.</div>';
+}
+
+function renderChart(st,list){
+  const el=$('chart');
+  if(st.mU==null||!st.sU){el.innerHTML='<div class="empty">Enter the target Mean & SD in the series settings, or record at least 20 points.</div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty">No data to display yet.</div>';return;}
+  const W=940,H=390,L=64,R=72,T=18,B=48,iw=W-L-R,ih=H-T-B;
+  const m=st.mU,s=st.sU;let lo=m-4.2*s,hi=m+4.2*s;
+  list.forEach(p=>{lo=Math.min(lo,p.value-0.3*s);hi=Math.max(hi,p.value+0.3*s)});
+  const y=v=>T+ih*(1-(v-lo)/(hi-lo));
+  const n=list.length,x=i=>n===1?L+iw/2:L+iw*i/(n-1);
+  let g='';
+  for(let k=-3;k<=3;k++){
+    const v=m+k*s;if(v<lo||v>hi)continue;
+    const col=k===0?'#2563eb':Math.abs(k)===1?'#16a34a':Math.abs(k)===2?'#d97706':'#dc2626';
+    g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${col}" stroke-width="${k===0?1.8:1}" ${k!==0?'stroke-dasharray="7 5"':''} opacity=".85"/>`;
+    g+=`<text x="${W-R+8}" y="${y(v)+4}" font-size="11" fill="${col}">${k===0?'Mean':(k>0?'+':'−')+Math.abs(k)+'SD'}</text>`;
+  }
+  const step=Math.max(1,Math.ceil(n/10));
+  list.forEach((p,i)=>{if(i%step===0||i===n-1)g+=`<text x="${x(i)}" y="${H-B+22}" font-size="10" fill="#64748b" text-anchor="middle" transform="rotate(-40 ${x(i)} ${H-B+22})">${p.date.slice(5)}</text>`});
+  g+='<polyline fill="none" stroke="#94a3b8" stroke-width="1.4" opacity=".75" points="'+list.map((p,i)=>x(i)+','+y(p.value)).join(' ')+'"/>';
+  const pcol={ok:'#16a34a',warn:'#d97706',bad:'#dc2626'};
+  const stTxt={ok:'Accept',warn:'Warning (1-2s)',bad:'Reject'};
+  list.forEach((p,i)=>{
+    const c=pcol[p.status]||'#94a3b8';
+    const ttip=`${p.date} · ${fmt(p.value)} · z=${fmt(p.z)} · ${stTxt[p.status]||'—'}${p.rules.length?' · '+p.rules.join(', '):''}`;
+    g+=`<circle cx="${x(i)}" cy="${y(p.value)}" r="${p.status==='bad'?5.5:4.2}" fill="${c}" stroke="#fff" stroke-width="1.5" opacity=".95" style="cursor:pointer"><title>${ttip}</title></circle>`;
+  });
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family:var(--font);min-width:${W}px">${g}</svg>`;
+}
+
+function exportCSV(){
+  const t=cur();if(!t)return alert('Select a series first');
+  const list=window.CURLIST||[];
+  if(!list.length)return alert('No data to export');
+  const stTxt={ok:'Accept',warn:'Warning',bad:'Reject','—':'—'};
+  const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const csv='Date,Value,z-score,Status,Rules\n'+list.map(p=>[p.date,p.value,p.z==null?'':+p.z.toFixed(3),stTxt[p.status]||'',p.rules.join(' ')].map(esc).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='QC_'+t.name.replace(/[^\w-]+/g,'_')+'_L'+t.level+'.csv';
+  a.click();URL.revokeObjectURL(a.href);
+}
+function demo(){
+  const t=cur();if(!t)return alert('Create a series first');
+  const m=t.targetMean||100,sd=t.targetSD||m*0.03,d0=new Date();
+  for(let i=0;i<20;i++){
+    const spike=(i===6||i===14)?(Math.random()<.5?-1:1)*2.6:0;
+    const v=m+((Math.random()+Math.random()+Math.random())/1.5-1)*1.2*sd+spike*sd;
+    const d=new Date(d0);d.setDate(d.getDate()-(19-i));
+    DB.entries.push({id:uid()+i,testId:t.id,date:d.toISOString().slice(0,10),value:+v.toFixed(2)});
+  }
+  save();renderAll();
+}
+function backup(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(DB,null,1)],{type:'application/json'}));
+  a.download='nimalab_iqc_backup.json';
+  a.click();URL.revokeObjectURL(a.href);
+}
+function restore(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(!d||!Array.isArray(d.tests)||!Array.isArray(d.entries))throw 0;
+    if(!confirm('Replace all current IQC data with the backup file?'))return;
+    DB=d;save();renderAll();
+  }catch{alert('Invalid backup file')}};
+  r.readAsText(f);input.value='';
+}
+
+renderAll();
+</script>
+</body>
+</html>

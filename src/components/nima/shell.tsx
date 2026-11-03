@@ -32,6 +32,7 @@ import {
   FileStack,
 } from "lucide-react";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import Navbar, { NAV_LEAD, NAV_GROUPS, NAV_TAIL, type NavItem as GroupNavItem } from "./NavbarGrouped";
 
 export const CAT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   biochem: FlaskConical,
@@ -72,6 +73,29 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "brochures", label: "Brochures", icon: FileStack, desc: "Kit & control brochures" },
   { id: "help", label: "Help", icon: HelpCircle, desc: "Install, offline, admin" },
 ];
+
+/* ---- mobile menu button (works for both plain items and grouped children) ---- */
+function MobileNavBtn({
+  item,
+  active,
+  onPick,
+}: {
+  item: GroupNavItem;
+  active: string;
+  onPick: (item: GroupNavItem) => void;
+}) {
+  return (
+    <button
+      onClick={() => onPick(item)}
+      className={`flex items-center gap-2 px-2.5 py-2.5 rounded-lg text-xs font-semibold ${
+        active === item.id ? "bg-primary text-white shadow-sm" : "bg-secondary/60 hover:bg-secondary text-foreground"
+      }`}
+    >
+      <item.icon className="w-4 h-4 shrink-0" />
+      <span className="truncate">{item.label}</span>
+    </button>
+  );
+}
 
 export function useHashRoute(): { route: string; param: string; go: (r: string, p?: string) => void } {
   const [hash, setHash] = useState("");
@@ -250,7 +274,6 @@ function ShellInner({
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-border shadow-sm">
-        {/* کانتینر عریض‌تر شده تا همه ۱۳ گزینه جا شوند */}
         <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-4 h-14 flex items-center justify-between gap-1.5">
           
           {/* ۱. لوگو */}
@@ -258,27 +281,8 @@ function ShellInner({
             <Logo />
           </button>
 
-          {/* ۲. نوار دسکتاپ: فشرده، دارای اسکرول خودکار بدون بیرون‌زدگی */}
-          <nav
-            aria-label="Main navigation"
-            className="hidden xl:flex items-center gap-1 overflow-x-auto whitespace-nowrap py-1 scrollbar-none flex-1 justify-center min-w-0"
-          >
-            {NAV_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => go(item.id)}
-                title={item.desc}
-                className={`px-2 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 shrink-0 ${
-                  route === item.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-foreground/80 hover:bg-secondary hover:text-foreground"
-                }`}
-              >
-                <item.icon className="w-3.5 h-3.5 shrink-0" />
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </nav>
+          {/* ۲. نوار دسکتاپ: ۵ آیتم گروه‌بندی‌شده (Home | Lab Tools | Resources | Services | Help) */}
+          <Navbar active={route} onNavigate={(id) => go(id)} />
 
           {/* ۳. دکمه‌های سمت راست (ادمین و منوی همبرگری) */}
           <div className="flex items-center gap-1.5 shrink-0">
@@ -309,26 +313,43 @@ function ShellInner({
           </div>
         </div>
 
-        {/* ۴. منوی بازشونده موبایل با طراحی دوتایی و دسترسی به تمام بخش‌ها */}
+        {/* ۴. منوی بازشونده موبایل — همان ساختار ۵ آیتمی منوی دسکتاپ */}
         {open && (
           <nav className="xl:hidden border-t bg-white px-3 py-3 max-h-[85vh] overflow-y-auto shadow-xl" aria-label="Mobile menu">
-            <div className="grid grid-cols-2 gap-2 pb-3">
-              {NAV_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    go(item.id);
-                    setOpen(false);
-                  }}
-                  className={`flex items-center gap-2 px-2.5 py-2.5 rounded-lg text-xs font-semibold ${
-                    route === item.id ? "bg-primary text-white shadow-sm" : "bg-secondary/60 hover:bg-secondary text-foreground"
-                  }`}
-                >
-                  <item.icon className="w-4 h-4 shrink-0" />
-                  <span className="truncate">{item.label}</span>
-                </button>
-              ))}
-            </div>
+            {(() => {
+              const pick = (item: GroupNavItem) => {
+                if (item.href) { window.location.href = item.href; setOpen(false); return; }
+                go(item.id);
+                setOpen(false);
+              };
+              return (
+                <>
+                  <div className="grid grid-cols-2 gap-2 pb-3">
+                    {NAV_LEAD.map((item) => (
+                      <MobileNavBtn key={item.id} item={item} active={route} onPick={pick} />
+                    ))}
+                  </div>
+                  {NAV_GROUPS.map((g) => (
+                    <div key={g.label} className="pb-3">
+                      <div className="flex items-center gap-1.5 px-1 pb-1.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                        <g.icon className="w-3 h-3" />
+                        <span>{g.label}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {g.children.map((item) => (
+                          <MobileNavBtn key={item.id} item={item} active={route} onPick={pick} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <div className="grid grid-cols-2 gap-2 pb-3">
+                    {NAV_TAIL.map((item) => (
+                      <MobileNavBtn key={item.id} item={item} active={route} onPick={pick} />
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
 
             {/* دکمه ورود ادمین در داخل منوی گوشی */}
             {ready && (
