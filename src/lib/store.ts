@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { AccuracyStudy, AnalyzerParam, Article, LabEvent, NewsItem, QcSeries } from "./nima-types";
+import type { AccuracyStudy, AnalyzerParam, Article, LabEvent, NewsItem, QcSeries, KitValidationStudy } from "./nima-types";
 import { SEED_ARTICLES, SEED_EVENTS, SEED_NEWS } from "./data/seeds";
 
 const PREFIX = "nima:";
@@ -33,7 +33,6 @@ export function usePersistent<T>(key: string, initial: T) {
 
   useEffect(() => {
     const stored = loadKey<T>(key, initial);
-    // hydrate from localStorage after mount (SSR-safe)
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue(stored);
     setHydrated(true);
@@ -71,6 +70,9 @@ export function useAccuracyStudies() {
 }
 export function useParams() {
   return usePersistent<AnalyzerParam[]>("params", []);
+}
+export function useKitValidations() {
+  return usePersistent<KitValidationStudy[]>("kitValidation", []);
 }
 
 /** Export everything as a single JSON backup file. */

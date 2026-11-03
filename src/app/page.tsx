@@ -1,11 +1,5 @@
 "use client";
 
-/* ============================================================
-   Nima Lab Companion — app/page.tsx
-   مسیرها مطابق ساختار پروژه:
-   src/components/nima/views/
-   ============================================================ */
-
 import { Shell, useHashRoute } from "@/components/nima/shell";
 
 import { HomeView } from "@/components/nima/views/home";
@@ -19,10 +13,9 @@ import { ArticlesView } from "@/components/nima/views/articles";
 import { NewsView } from "@/components/nima/views/news";
 import { EventsView } from "@/components/nima/views/events";
 import { HelpView } from "@/components/nima/views/help";
-
-// ✅ دو بخش جدید: پارامترها و بروشورها
 import { ParamsView } from "@/components/nima/views/params";
 import { BrochuresView } from "@/components/nima/views/brochures";
+import { KitValidationView } from "@/components/nima/views/kit-validation";
 
 export default function Page() {
   const { route, go } = useHashRoute();
@@ -33,6 +26,7 @@ export default function Page() {
       {route === "tests" && <TestsView go={go} />}
       {route === "formulas" && <FormulasView go={go} />}
       {route === "qc" && <QcView go={go} />}
+      {route === "kitval" && <KitValidationView />}
       {route === "integrity" && <IntegrityView go={go} />}
       {route === "accuracy" && <AccuracyView go={go} />}
       {route === "analyzer" && <AnalyzerView go={go} />}
@@ -40,8 +34,6 @@ export default function Page() {
       {route === "news" && <NewsView go={go} />}
       {route === "events" && <EventsView go={go} />}
       {route === "help" && <HelpView go={go} />}
-
-      {/* ===== بخش‌های جدید ===== */}
       {route === "params" && <ParamsView go={go} />}
       {route === "brochures" && <BrochuresView go={go} />}
     </Shell>

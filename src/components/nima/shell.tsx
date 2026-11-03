@@ -272,6 +272,7 @@ const PAGE_GUIDES: Record<string, string> = {
   params: "Select a device to view its parameters, specifications and recommended settings.",
   brochures: "Open or download kit and control brochures, grouped by manufacturer for quick lookup.",
   help: "Install the app for offline use, back up or restore your data, and find the admin tools here.",
+  kitval: "Admin: create a study, enter within-run and between-run replicates, accuracy and linearity points; export the CLSI-style report to Excel.",
 };
 function ShellInner({
   route,

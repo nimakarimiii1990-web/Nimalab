@@ -1,6 +1,6 @@
 'use client';
 
-/* NIMA LAB — compact navbar v2 (13 items -> 5 items)
+/* NIMA LAB — compact navbar v2
    Home | Lab Tools ▾ | Resources ▾ | Services ▾ | Help */
 
 import { useEffect, useRef, useState } from 'react';
@@ -26,6 +26,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { id: 'tests',     label: 'Lab Tests',        icon: TestTubes,      desc: 'Complete reference, all disciplines' },
       { id: 'formulas',  label: 'Formulas',         icon: Sigma,          desc: 'Clinical formulas with calculators' },
       { id: 'qc',        label: 'Quality Control',  icon: Gauge,          desc: 'Levey-Jennings & Westgard' },
+      { id: 'kitval',    label: 'Kit Validation',   icon: FlaskConical,   desc: 'CLSI precision, bias & linearity' },
       { id: 'integrity', label: 'Result Integrity', icon: ShieldCheck,    desc: 'Cross-test consistency with charts' },
       { id: 'accuracy',  label: 'Accuracy',         icon: Target,         desc: 'Bias & accuracy vs target values' },
       { id: 'analyzer',  label: 'Analyzer',         icon: Microscope,     desc: 'Parameters & result troubleshooting' },

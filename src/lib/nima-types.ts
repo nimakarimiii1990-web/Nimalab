@@ -20,23 +20,23 @@ export interface Category {
   id: CatId;
   fa: string;
   en: string;
-  icon: string; // lucide icon name (string key mapped in UI)
-  desc: string; // Persian short description
+  icon: string;
+  desc: string;
 }
 
 export interface LabTest {
-  id: string; // slug, latin
-  fa: string; // Persian name
-  en: string; // English / latin name
-  syn?: string; // synonyms for search
+  id: string;
+  fa: string;
+  en: string;
+  syn?: string;
   cat: CatId;
-  sp: string; // specimen
-  unit: string; // reference unit
-  ref: string; // reference range (Persian text)
-  sig: string; // clinical significance — one concise Persian sentence
-  f?: string; // formula id (formulas registry)
-  intr?: string; // important interferences / pre-analytical notes
-  hot?: string; // critical (panic) values note
+  sp: string;
+  unit: string;
+  ref: string;
+  sig: string;
+  f?: string;
+  intr?: string;
+  hot?: string;
 }
 
 export interface FormulaInput {
@@ -49,28 +49,28 @@ export interface Formula {
   id: string;
   fa: string;
   en: string;
-  expr: string; // display expression (HTML-safe, Persian/latin mixed)
+  expr: string;
   inputs: FormulaInput[];
   out: { fa: string; unit: string };
   compute: (v: Record<string, number>) => number | null;
-  interp: (r: number, v: Record<string, number>) => string; // Persian interpretation
-  refs: string[]; // references
-  cats?: CatId[]; // related categories
+  interp: (r: number, v: Record<string, number>) => string;
+  refs: string[];
+  cats?: CatId[];
 }
 
 export interface Article {
   id: string;
-  title: string; // original title (EN)
+  title: string;
   titleFa?: string;
   journal: string;
   year: number;
   doi?: string;
   pmid?: string;
   url: string;
-  summaryFa: string; // brief Persian description
-  tags: string[]; // related test ids / keywords
+  summaryFa: string;
+  tags: string[];
   source: "seed" | "sync";
-  addedAt: string; // ISO
+  addedAt: string;
 }
 
 export interface NewsItem {
@@ -79,7 +79,7 @@ export interface NewsItem {
   summaryFa: string;
   sourceName: string;
   url: string;
-  date: string; // ISO
+  date: string;
   source: "seed" | "sync";
 }
 
@@ -89,52 +89,52 @@ export interface LabEvent {
   en?: string;
   city: string;
   country: string;
-  dateStart: string; // ISO (approx ok)
+  dateStart: string;
   dateEnd: string;
   site: string;
   descFa: string;
-  verified: boolean; // dates verified from official site?
+  verified: boolean;
   source: "seed" | "user";
 }
 
 // ---------- QC ----------
 export interface QcSeries {
   id: string;
-  analyte: string; // test name (free text, often en name)
-  level: string; // Normal / High / Low
+  analyte: string;
+  level: string;
   unit: string;
   mean: number;
   sd: number;
   lot?: string;
-  tea?: number; // allowable total error % (for sigma)
-  bias?: number; // bias %
+  tea?: number;
+  bias?: number;
   entries: QcEntry[];
   createdAt: string;
 }
 export interface QcEntry {
   id: string;
-  date: string; // ISO
+  date: string;
   value: number;
   note?: string;
 }
 
-// ---------- Accuracy (result verification) ----------
+// ---------- Accuracy ----------
 export interface AccuracyStudy {
   id: string;
   analyte: string;
   unit: string;
-  tea: number; // allowable total error %, e.g. CLIA goal
+  tea: number;
   points: AccuracyPoint[];
   createdAt: string;
 }
 export interface AccuracyPoint {
   id: string;
-  sample: string; // sample label
-  target: number; // reference/assigned value
-  measured: number; // lab result
+  sample: string;
+  target: number;
+  measured: number;
 }
 
-// ---------- Analyzer parameters & results ----------
+// ---------- Analyzer ----------
 export interface AnalyzerParam {
   id: string;
   fa: string;
@@ -145,18 +145,18 @@ export interface AnalyzerParam {
   critLow?: number;
   critHigh?: number;
   decimals?: number;
-  formula?: string; // formula id if applicable
+  formula?: string;
   source: "seed" | "user";
 }
 export interface PatientResultRow {
   id: string;
-  paramId: string; // matches AnalyzerParam.id or test id
+  paramId: string;
   nameEn: string;
   nameFa: string;
   unit: string;
   value: number;
-  prev?: number; // previous result for delta check
-  flag?: string; // filled by checker
+  prev?: number;
+  flag?: string;
 }
 
 export interface CheckReportItem {
@@ -165,10 +165,10 @@ export interface CheckReportItem {
   value: number;
   unit: string;
   status: "ok" | "low" | "high" | "critical" | "error";
-  messages: string[]; // Persian troubleshooting messages
+  messages: string[];
 }
 
-// ---------- Pubmed sync ----------
+// ---------- Pubmed ----------
 export interface PubmedArticle {
   pmid: string;
   title: string;
@@ -177,4 +177,48 @@ export interface PubmedArticle {
   date: string;
   doi?: string;
   url: string;
+}
+
+// ---------- Kit validation (CLSI EP15 / production verification) ----------
+export interface KitValReplicate {
+  id: string;
+  runId: string;
+  date: string;
+  level: string;
+  value: number;
+}
+
+export interface KitValAccuracyPoint {
+  id: string;
+  date: string;
+  sample: string;
+  target: number;
+  measured: number;
+}
+
+export interface KitValLinearityPoint {
+  id: string;
+  date: string;
+  expected: number;
+  measured: number;
+}
+
+export interface KitValidationStudy {
+  id: string;
+  kitName: string;
+  analyte: string;
+  unit: string;
+  lot: string;
+  manufacturer: string;
+  tea: number;
+  claimCV: number;
+  claimBias: number;
+  startDate: string;
+  endDate: string;
+  analyst: string;
+  notes: string;
+  replicates: KitValReplicate[];
+  accuracyPoints: KitValAccuracyPoint[];
+  linearityPoints: KitValLinearityPoint[];
+  createdAt: string;
 }
