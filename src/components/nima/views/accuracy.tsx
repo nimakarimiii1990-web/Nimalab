@@ -12,11 +12,10 @@ import {
   ReferenceLine,
   Cell,
 } from "recharts";
-import { Target, Plus, Trash2, Download, Lock } from "lucide-react";
+import { Target, Plus, Trash2, Download } from "lucide-react";
 import { useAccuracyStudies } from "@/lib/store";
 import { uid } from "@/lib/checks";
-import { useAuth, ReadOnlyNotice } from "@/lib/auth";
-import type { AccuracyStudy, AccuracyPoint } from "@/lib/nima-types";
+import type { AccuracyStudy } from "@/lib/nima-types";
 import { toast } from "@/hooks/use-toast";
 
 export function AccuracyView() {
@@ -24,7 +23,6 @@ export function AccuracyView() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState({ analyte: "", unit: "", tea: "12" });
   const [pointForm, setPointForm] = useState({ sample: "", target: "", measured: "" });
-  const { isAdmin } = useAuth();
 
   const selected = studies.find((s) => s.id === selectedId) || studies[0];
 
@@ -110,7 +108,7 @@ export function AccuracyView() {
       </h1>
       <p className="text-muted-foreground text-sm mb-6">
         Compare your laboratory result with a target value (EQA, stabilized control or reference method); the percent
-        bias of each sample is judged against the allowable total error (TEa). Editing is reserved for the admin.
+        bias of each sample is judged against the allowable total error (TEa). Anyone can create studies and enter data — results stay on this device.
       </p>
 
       <div className="grid lg:grid-cols-[340px,1fr] gap-6 items-start">
@@ -118,124 +116,132 @@ export function AccuracyView() {
           <div className="bg-white rounded-2xl border p-4">
             <h2 className="font-bold mb-3 text-sm flex items-center gap-2">
               New accuracy study
-              {!isAdmin && <Lock className="w-3.5 h-3.5 text-muted-foreground" />}
             </h2>
-            {isAdmin ? (
-              <div className="space-y-2.5">
+            <div className="space-y-2.5">
+              <input
+                value={form.analyte}
+                onChange={(e) => setForm((f) => ({ ...f, analyte: e.target.value }))}
+                placeholder="Analyte (e.g. Glucose)"
+                className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30"
+              />
+              <div className="flex gap-2">
                 <input
-                  value={form.analyte}
-                  onChange={(e) => setForm((f) => ({ ...f, analyte: e.target.value }))}
-                  placeholder="Analyte name (e.g. Creatinine)"
-                  className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  value={form.unit}
+                  onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))}
+                  placeholder="Unit (mg/dL)"
+                  className="flex-1 px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30"
                 />
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    value={form.unit}
-                    onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))}
-                    placeholder="Unit"
-                    className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                  <input
-                    value={form.tea}
-                    onChange={(e) => setForm((f) => ({ ...f, tea: e.target.value }))}
-                    type="number"
-                    placeholder="TEa %"
-                    className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                </div>
-                <button onClick={addStudy} className="w-full bg-primary text-white rounded-lg py-2.5 text-sm font-bold hover:bg-primary/90 flex items-center justify-center gap-2">
-                  <Plus className="w-4 h-4" />
-                  Create study
-                </button>
+                <input
+                  value={form.tea}
+                  onChange={(e) => setForm((f) => ({ ...f, tea: e.target.value }))}
+                  placeholder="TEa %"
+                  type="number"
+                  step="any"
+                  className="w-24 px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                />
               </div>
-            ) : (
-              <ReadOnlyNotice what="create accuracy studies" />
-            )}
-          </div>
-
-          <div className="bg-white rounded-2xl border">
-            <div className="p-3 border-b flex items-center justify-between">
-              <h2 className="font-bold text-sm">Studies ({studies.length.toLocaleString("en-US")})</h2>
-              <button onClick={exportJson} className="p-1.5 rounded hover:bg-secondary" title="Export JSON">
-                <Download className="w-4 h-4 text-muted-foreground" />
+              <button
+                onClick={addStudy}
+                className="w-full bg-primary text-white rounded-lg py-2.5 text-sm font-bold hover:bg-primary/90 flex items-center justify-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" /> Create study
               </button>
             </div>
-            {studies.map((s) => (
-              <div
-                key={s.id}
-                className={`flex items-center justify-between px-4 py-3 border-b last:border-0 text-sm ${
-                  s.id === selected?.id ? "bg-secondary font-bold" : ""
-                }`}
-              >
-                <button onClick={() => setSelectedId(s.id)} className="text-left flex-1">
-                  <span className="ltr-inline">{s.analyte}</span>
-                  <span className="block text-xs text-muted-foreground ltr-inline">
-                    TEa {s.tea}% · {s.points.length} pts
-                  </span>
+          </div>
+
+          <div className="bg-white rounded-2xl border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-bold text-sm">Studies ({studies.length})</h2>
+              {studies.length > 0 && (
+                <button onClick={exportJson} className="p-1.5 rounded-lg hover:bg-secondary" title="Export JSON">
+                  <Download className="w-4 h-4 text-muted-foreground" />
                 </button>
-                {isAdmin && (
-                  <button onClick={() => removeStudy(s.id)} className="p-1.5 rounded hover:bg-red-50">
-                    <Trash2 className="w-4 h-4 text-red-400" />
-                  </button>
-                )}
-              </div>
-            ))}
-            {studies.length === 0 && (
-              <div className="p-6 text-center text-sm text-muted-foreground">No studies created yet.</div>
+              )}
+            </div>
+            {studies.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">No studies created yet.</p>
+            ) : (
+              <ul className="space-y-1.5">
+                {studies.map((s) => (
+                  <li key={s.id}>
+                    <button
+                      onClick={() => setSelectedId(s.id)}
+                      className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors flex items-center justify-between gap-2 ${
+                        selected?.id === s.id ? "bg-primary text-white" : "hover:bg-secondary"
+                      }`}
+                    >
+                      <span>
+                        <span className="font-medium block">{s.analyte}</span>
+                        <span className={`text-[11px] ${selected?.id === s.id ? "text-white/80" : "text-muted-foreground"}`}>
+                          TEa ±{s.tea}% · {s.points.length} point{s.points.length !== 1 ? "s" : ""}
+                        </span>
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeStudy(s.id);
+                        }}
+                        className={`p-1 rounded ${selected?.id === s.id ? "hover:bg-white/20" : "hover:bg-red-50"}`}
+                      >
+                        <Trash2 className={`w-3.5 h-3.5 ${selected?.id === s.id ? "text-white/80" : "text-red-400"}`} />
+                      </button>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         </div>
 
         {selected ? (
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl border p-4 flex flex-wrap items-end gap-3">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Sample</label>
-                <input
-                  value={pointForm.sample}
-                  onChange={(e) => setPointForm((f) => ({ ...f, sample: e.target.value }))}
-                  disabled={!isAdmin}
-                  className="w-32 px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:bg-secondary/40"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Target value ({selected.unit})</label>
-                <input
-                  value={pointForm.target}
-                  onChange={(e) => setPointForm((f) => ({ ...f, target: e.target.value }))}
-                  type="number"
-                  step="any"
-                  disabled={!isAdmin}
-                  className="w-32 px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:bg-secondary/40"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Laboratory result</label>
-                <input
-                  value={pointForm.measured}
-                  onChange={(e) => setPointForm((f) => ({ ...f, measured: e.target.value }))}
-                  type="number"
-                  step="any"
-                  disabled={!isAdmin}
-                  className="w-32 px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:bg-secondary/40"
-                />
-              </div>
-              {isAdmin ? (
+            <div className="bg-white rounded-2xl border p-4">
+              <h2 className="font-bold text-sm mb-3">
+                {selected.analyte} <span className="text-muted-foreground font-normal">({selected.unit})</span>
+              </h2>
+              <div className="flex flex-wrap items-end gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Sample ID</label>
+                  <input
+                    value={pointForm.sample}
+                    onChange={(e) => setPointForm((f) => ({ ...f, sample: e.target.value }))}
+                    placeholder="optional"
+                    className="w-32 px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Target value ({selected.unit})</label>
+                  <input
+                    value={pointForm.target}
+                    onChange={(e) => setPointForm((f) => ({ ...f, target: e.target.value }))}
+                    type="number"
+                    step="any"
+                    className="w-32 px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Laboratory result</label>
+                  <input
+                    value={pointForm.measured}
+                    onChange={(e) => setPointForm((f) => ({ ...f, measured: e.target.value }))}
+                    type="number"
+                    step="any"
+                    className="w-32 px-3 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
                 <button onClick={addPoint} className="bg-primary text-white rounded-lg px-5 py-2.5 text-sm font-bold hover:bg-primary/90">
                   Add point
                 </button>
-              ) : (
-                <span className="text-[11px] text-muted-foreground mb-2">admin only</span>
-              )}
-              {meanBias !== null && (
-                <div className="text-xs sm:ml-auto">
-                  Mean bias:{" "}
-                  <b className={`ltr-inline ${Math.abs(meanBias) > selected.tea ? "text-red-600" : "text-emerald-600"}`}>
-                    {meanBias > 0 ? "+" : ""}
-                    {meanBias}%
-                  </b>
-                </div>
-              )}
+                {meanBias !== null && (
+                  <div className="text-xs sm:ml-auto">
+                    Mean bias:{" "}
+                    <b className={`ltr-inline ${Math.abs(meanBias) > selected.tea ? "text-red-600" : "text-emerald-600"}`}>
+                      {meanBias > 0 ? "+" : ""}
+                      {meanBias}%
+                    </b>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl border p-4">
@@ -248,25 +254,16 @@ export function AccuracyView() {
                 <div className="h-80" dir="ltr">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData} margin={{ top: 10, right: 20, bottom: 0, left: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
                       <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip formatter={(v) => [`${v}%`, "Bias"]} />
-                      <ReferenceLine y={selected.tea} stroke="#ef4444" strokeDasharray="4 4" label="+TEa" />
-                      <ReferenceLine y={-selected.tea} stroke="#ef4444" strokeDasharray="4 4" label="−TEa" />
-                      <ReferenceLine y={0} stroke="#0b5cad" />
-                      <Bar dataKey="bias" radius={[4, 4, 0, 0]} isAnimationActive={false}>
+                      <YAxis tick={{ fontSize: 11 }} unit="%" />
+                      <Tooltip formatter={(v: number) => [`${v}%`, "Bias"]} />
+                      <ReferenceLine y={0} stroke="#64748b" />
+                      <ReferenceLine y={selected.tea} stroke="#dc2626" strokeDasharray="4 4" />
+                      <ReferenceLine y={-selected.tea} stroke="#dc2626" strokeDasharray="4 4" />
+                      <Bar dataKey="bias" radius={[4, 4, 0, 0]}>
                         {chartData.map((d, i) => (
-                          <Cell
-                            key={i}
-                            fill={
-                              Math.abs(d.bias) > selected.tea
-                                ? "#ef4444"
-                                : Math.abs(d.bias) > selected.tea / 2
-                                ? "#f59e0b"
-                                : "#10b981"
-                            }
-                          />
+                          <Cell key={i} fill={Math.abs(d.bias) > selected.tea ? "#dc2626" : "#16a34a"} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -276,9 +273,8 @@ export function AccuracyView() {
             </div>
 
             <div className="bg-white rounded-2xl border overflow-hidden">
-              <h3 className="font-bold text-sm p-4 pb-2">Comparison table</h3>
               <table className="w-full text-sm">
-                <thead className="bg-secondary/60 text-xs">
+                <thead className="bg-secondary/50">
                   <tr>
                     <th className="px-4 py-2 text-left">Sample</th>
                     <th className="px-4 py-2 text-left">Target</th>
@@ -306,11 +302,9 @@ export function AccuracyView() {
                           )}
                         </td>
                         <td className="px-4 py-2">
-                          {isAdmin && (
-                            <button onClick={() => deletePoint(selected.id, p.id)} className="p-1 rounded hover:bg-red-50">
-                              <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                            </button>
-                          )}
+                          <button onClick={() => deletePoint(selected.id, p.id)} className="p-1 rounded hover:bg-red-50">
+                            <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                          </button>
                         </td>
                       </tr>
                     );
@@ -326,7 +320,7 @@ export function AccuracyView() {
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-dashed p-10 text-center text-muted-foreground">
-            Create an accuracy study (admin) and enter target / measured values. Everyone can view and export.
+            Create an accuracy study and enter target / measured values. Data stays on your device.
           </div>
         )}
       </div>

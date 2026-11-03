@@ -257,7 +257,22 @@ function AdminDialog({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
-
+/* ---- short English usage guide shown under the header on every page ---- */
+const PAGE_GUIDES: Record<string, string> = {
+  home: "Browse the dashboard cards and click any tool to jump straight into it.",
+  tests: "Search or filter the test list, then open a test to see its reference ranges, units and clinical notes.",
+  formulas: "Pick a formula, fill in the inputs and read the calculated result instantly — units are shown next to every field.",
+  qc: "Create a QC series, enter the daily control values and the Levey-Jennings chart, Westgard flags and sigma metric update automatically.",
+  integrity: "Select a test panel and compare the cross-test consistency charts to spot implausible result patterns before reporting.",
+  accuracy: "Create a study, enter target and measured values for each sample; bias % is compared against TEa and shown on the chart.",
+  analyzer: "Choose your analyzer and parameter, then follow the step-by-step troubleshooting guide for flags and errors.",
+  articles: "Browse recent PubMed articles with Persian summaries; use the search box and year filters to narrow the list.",
+  news: "Scroll the latest world laboratory news; click any card to read the full story at the source.",
+  events: "Check the calendar of IVD congresses and exhibitions; filter to show only upcoming events.",
+  params: "Select a device to view its parameters, specifications and recommended settings.",
+  brochures: "Open or download kit and control brochures, grouped by manufacturer for quick lookup.",
+  help: "Install the app for offline use, back up or restore your data, and find the admin tools here.",
+};
 function ShellInner({
   route,
   go,
@@ -373,7 +388,14 @@ function ShellInner({
           </nav>
         )}
       </header>
-
+      {PAGE_GUIDES[route] && (
+        <div className="border-b bg-sky-50/70">
+          <div className="max-w-[1600px] mx-auto px-4 py-1.5 text-[11.5px] text-sky-900/70 flex items-center gap-1.5">
+            <span aria-hidden="true">💡</span>
+            <span>{PAGE_GUIDES[route]}</span>
+          </div>
+        </div>
+      )}
       <main className="flex-1">{children}</main>
 
       <footer className="mt-auto border-t bg-white">
