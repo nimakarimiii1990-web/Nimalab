@@ -74,10 +74,19 @@ tbody tr:hover{background:#f8fafc}
 <body>
 
 <nav class="nav"><div class="nav-in">
-  <a class="brand" href="/"><span class="logo">ًں§ھ</span><span class="brand-t"><b>Nima</b><small>LAB COMPANION</small></span></a>
-  <div class="nav-r"><a href="/">â†گ Back to site</a><a class="active" href="#top">Quality Control</a></div>
+  <a class="brand" href="/">
+    <span class="logo" style="font-size:15px;font-weight:800;letter-spacing:-0.5px">N</span>
+    <span class="brand-t"><b>Nima</b><small>LAB COMPANION</small></span>
+  </a>
+  <div class="nav-r">
+    <a href="/">Home</a>
+    <a href="/#/tests">Lab Tests</a>
+    <a href="/#/accuracy">Accuracy</a>
+    <a href="/#/analyzer">Analyzer</a>
+    <a href="/#/help">Help</a>
+    <a class="active" href="#top">Quality Control</a>
+  </div>
 </div></nav>
-
 <div class="page-head" id="top">
   <h1><span class="ic">ًں“ˆ</span> Internal Quality Control (IQC)</h1>
   <p>Levey-Jennings chart with Westgard rules (1-2s, 1-3s, 2-2s, R-4s, 3-1s, 4-1s, 10x) and the sigma metric â€” data is stored on your own device. Mean, SD, CV% and Bias% are calculated automatically; you only enter the daily values.</p>
@@ -539,7 +548,7 @@ function renderChart(st,list){
   for(let k=-3;k<=3;k++){
     const v=m+k*s;if(v<lo||v>hi)continue;
     const col=k===0?'#2563eb':Math.abs(k)===1?'#16a34a':Math.abs(k)===2?'#d97706':'#dc2626';
-    g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${col}" stroke-width="${k===0?1.8:1}" ${k!==0?'stroke-dasharray="7 5"':''} opacity=".85"/>`;
+    g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${col}" stroke-width="${k===0?1.8:1}" ${k!==0?'stroke-dasharray="7 5"':''} opacity=".91"/>`;
     g+=`<text x="${W-R+8}" y="${y(v)+4}" font-size="11" fill="${col}">${k===0?'Mean':(k>0?'+':'âˆ’')+Math.abs(k)+'SD'}</text>`;
   }
   const step=Math.max(1,Math.ceil(n/10));
