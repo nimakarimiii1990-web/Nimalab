@@ -1,19 +1,17 @@
 "use client";
 
 /**
- * Kit Validation — CLSI-aligned calculations
- * Precision: EP15 / EP05-style nested components (within-run / between-run / within-lab)
- * Trueness: bias %, recovery %, vs TEa
- * Linearity: OLS regression + residual / max deviation
- * Agreement: Bland–Altman (measured vs target)
- * Export: Excel-compatible CSV with all raw + summary tables
- * Access: Admin only for editing
+ * Kit Validation — CLSI-aligned
+ * EP15/EP05 precision (Sr, Sb, Swl + ANOVA table)
+ * Trueness, Bland–Altman, OLS / Deming / Passing–Bablok
+ * Linearity, LoB/LoD/LoQ (EP17-style)
+ * Excel CSV export — Admin edit only
  */
 
 import { useMemo, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  ReferenceLine, Legend, ScatterChart, Scatter, ZAxis, Line, ComposedChart, Cell,
+  ReferenceLine, Legend, ScatterChart, Scatter, Line, ComposedChart, Cell,
 } from "recharts";
 import { FlaskConical, Plus, Trash2, Download, Lock, Info } from "lucide-react";
 import { useKitValidations } from "@/lib/store";
@@ -24,26 +22,28 @@ import type {
 } from "@/lib/nima-types";
 import { toast } from "@/hooks/use-toast";
 
-/* ========================= Math (CLSI-style) ========================= */
+/* ========================= Math helpers ========================= */
 
-function mean(xs: number[]): number {
+function mean(xs: number[]) {
   if (!xs.length) return NaN;
   return xs.reduce((a, b) => a + b, 0) / xs.length;
 }
-function sum(xs: number[]) {
-  return xs.reduce((a, b) => a + b, 0);
-}
-/** Sample SD (n-1) */
-function sampleSd(xs: number[]): number {
+function sampleSd(xs: number[]) {
   if (xs.length < 2) return NaN;
   const m = mean(xs);
   return Math.sqrt(xs.reduce((s, x) => s + (x - m) ** 2, 0) / (xs.length - 1));
 }
-function cvPct(sdVal: number, meanVal: number): number {
-  if (!meanVal || isNaN(sdVal)) return NaN;
-  return (sdVal / Math.abs(meanVal)) * 100;
+function cvPct(sdV: number, m: number) {
+  if (!m || isNaN(sdV)) return NaN;
+  return (sdV / Math.abs(m)) * 100;
 }
-function fmt(x: number, d = 4): string {
+function median(xs: number[]) {
+  if (!xs.length) return NaN;
+  const a = [...xs].sort((p, q) => p - q);
+  const mid = Math.floor(a.length / 2);
+  return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
+}
+function fmt(x: number, d = 4) {
   if (x == null || isNaN(x)) return "—";
   return Number(x).toFixed(d);
 }
@@ -51,38 +51,26 @@ function fmt2(x: number) {
   return fmt(x, 2);
 }
 
-/**
- * EP15 / EP05-style precision components for one concentration level.
- * Data model: multiple runs (runId), each with ≥1 replicates.
- *
- * Within-run variance (repeatability):
- *   S_r² = Σ_i Σ_j (x_ij - x̄_i)² / (N - r)
- * Between-run variance:
- *   S_b² = max(0, (Σ_i n_i (x̄_i - x̄)² / (r - 1) - S_r²) / n0)
- *   where n0 ≈ average replicates per run
- * Within-laboratory (total):
- *   S_wl² = S_r² + S_b²
- */
+/** EP15/EP05 nested precision components for one level */
 function precisionAnova(reps: KitValReplicate[]) {
   const values = reps.map((r) => r.value);
   const N = values.length;
   const grand = mean(values);
-
   const byRun: Record<string, number[]> = {};
   reps.forEach((r) => {
     (byRun[r.runId] ||= []).push(r.value);
   });
   const runIds = Object.keys(byRun);
-  const r = runIds.length;
+  const rCount = runIds.length;
 
-  // Within-run SS and df
   let ssWithin = 0;
   let dfWithin = 0;
   const runMeans: { runId: string; n: number; mean: number; sd: number; cv: number }[] = [];
   runIds.forEach((id) => {
     const vs = byRun[id];
     const mi = mean(vs);
-    runMeans.push({ runId: id, n: vs.length, mean: mi, sd: sampleSd(vs), cv: cvPct(sampleSd(vs), mi) });
+    const sdi = sampleSd(vs);
+    runMeans.push({ runId: id, n: vs.length, mean: mi, sd: sdi, cv: cvPct(sdi, mi) });
     if (vs.length >= 2) {
       vs.forEach((x) => {
         ssWithin += (x - mi) ** 2;
@@ -94,42 +82,30 @@ function precisionAnova(reps: KitValReplicate[]) {
   const Sr2 = dfWithin > 0 ? ssWithin / dfWithin : NaN;
   const Sr = Math.sqrt(Sr2);
 
-  // Between-run
   let ssBetween = 0;
   runIds.forEach((id) => {
     const vs = byRun[id];
     ssBetween += vs.length * (mean(vs) - grand) ** 2;
   });
-  const dfBetween = r > 1 ? r - 1 : 0;
+  const dfBetween = rCount > 1 ? rCount - 1 : 0;
   const MSb = dfBetween > 0 ? ssBetween / dfBetween : NaN;
-
-  // Effective n0 (average n per run, balanced approximation)
-  const n0 = N / r;
+  const MSw = Sr2;
+  const n0 = rCount > 0 ? N / rCount : NaN;
   let Sb2 = NaN;
-  if (!isNaN(MSb) && !isNaN(Sr2) && n0 > 0) {
-    Sb2 = Math.max(0, (MSb - Sr2) / n0);
-  }
+  if (!isNaN(MSb) && !isNaN(Sr2) && n0 > 0) Sb2 = Math.max(0, (MSb - Sr2) / n0);
   const Sb = Math.sqrt(Sb2);
   const Swl2 = (!isNaN(Sr2) ? Sr2 : 0) + (!isNaN(Sb2) ? Sb2 : 0);
   const Swl = Math.sqrt(Swl2);
+  const ssTotal = values.reduce((s, x) => s + (x - grand) ** 2, 0);
+  const dfTotal = N > 1 ? N - 1 : 0;
 
   return {
-    N,
-    runs: r,
-    grandMean: grand,
-    /** Repeatability SD (within-run) */
-    Sr,
-    /** Between-run SD component */
-    Sb,
-    /** Within-laboratory SD (total) */
-    Swl,
-    CVr: cvPct(Sr, grand),
-    CVb: cvPct(Sb, grand),
-    CVwl: cvPct(Swl, grand),
-    dfWithin,
-    dfBetween,
-    runMeans,
-    values,
+    N, runs: rCount, grandMean: grand,
+    Sr, Sb, Swl, Sr2, Sb2, Swl2,
+    CVr: cvPct(Sr, grand), CVb: cvPct(Sb, grand), CVwl: cvPct(Swl, grand),
+    dfWithin, dfBetween, dfTotal,
+    ssWithin, ssBetween, ssTotal, MSb, MSw, n0,
+    runMeans, values,
   };
 }
 
@@ -137,27 +113,74 @@ function precisionAnova(reps: KitValReplicate[]) {
 function ols(xs: number[], ys: number[]) {
   const n = xs.length;
   if (n < 2) return { slope: NaN, intercept: NaN, r: NaN, r2: NaN, syx: NaN };
-  const mx = mean(xs);
-  const my = mean(ys);
+  const mx = mean(xs), my = mean(ys);
   let sxx = 0, sxy = 0, syy = 0;
   for (let i = 0; i < n; i++) {
-    const dx = xs[i] - mx;
-    const dy = ys[i] - my;
-    sxx += dx * dx;
-    sxy += dx * dy;
-    syy += dy * dy;
+    const dx = xs[i] - mx, dy = ys[i] - my;
+    sxx += dx * dx; sxy += dx * dy; syy += dy * dy;
   }
   const slope = sxx === 0 ? NaN : sxy / sxx;
   const intercept = my - slope * mx;
   const r = sxx === 0 || syy === 0 ? NaN : sxy / Math.sqrt(sxx * syy);
-  const r2 = r * r;
   let ssRes = 0;
-  for (let i = 0; i < n; i++) {
-    const pred = slope * xs[i] + intercept;
-    ssRes += (ys[i] - pred) ** 2;
-  }
+  for (let i = 0; i < n; i++) ssRes += (ys[i] - (slope * xs[i] + intercept)) ** 2;
   const syx = n > 2 ? Math.sqrt(ssRes / (n - 2)) : NaN;
-  return { slope, intercept, r, r2, syx };
+  return { slope, intercept, r, r2: r * r, syx };
+}
+
+/** Deming regression (lambda = σ²εx / σ²εy). Default lambda = 1 (equal error). */
+function deming(xs: number[], ys: number[], lambda = 1) {
+  const n = xs.length;
+  if (n < 2) return { slope: NaN, intercept: NaN };
+  const mx = mean(xs), my = mean(ys);
+  let sxx = 0, syy = 0, sxy = 0;
+  for (let i = 0; i < n; i++) {
+    sxx += (xs[i] - mx) ** 2;
+    syy += (ys[i] - my) ** 2;
+    sxy += (xs[i] - mx) * (ys[i] - my);
+  }
+  sxx /= n - 1; syy /= n - 1; sxy /= n - 1;
+  if (sxy === 0) return { slope: NaN, intercept: NaN };
+  const U = syy - lambda * sxx;
+  const slope = (U + Math.sqrt(U * U + 4 * lambda * sxy * sxy)) / (2 * sxy);
+  const intercept = my - slope * mx;
+  return { slope, intercept };
+}
+
+/**
+ * Passing–Bablok regression (non-parametric).
+ * Slope = median of pairwise slopes (xi≠xj), excluding infinite/undefined.
+ * Intercept = median(yi − slope·xi)
+ */
+function passingBablok(xs: number[], ys: number[]) {
+  const n = xs.length;
+  if (n < 3) return { slope: NaN, intercept: NaN };
+  const slopes: number[] = [];
+  for (let i = 0; i < n - 1; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const dx = xs[j] - xs[i];
+      const dy = ys[j] - ys[i];
+      if (dx === 0) continue; // vertical — skip for slope median (simplified)
+      slopes.push(dy / dx);
+    }
+  }
+  if (!slopes.length) return { slope: NaN, intercept: NaN };
+  const slope = median(slopes);
+  const intercepts = xs.map((x, i) => ys[i] - slope * x);
+  const intercept = median(intercepts);
+  return { slope, intercept };
+}
+
+/** EP17-style LoB / LoD (parametric) */
+function ep17LobLod(blankValues: number[], lowValues: number[]) {
+  const meanBlank = mean(blankValues);
+  const sdBlank = sampleSd(blankValues);
+  const sdLow = sampleSd(lowValues);
+  // LoB ≈ mean_blank + 1.645·SDblank  (one-sided 95%)
+  const LoB = meanBlank + 1.645 * (sdBlank || 0);
+  // LoD ≈ LoB + 1.645·SDlow
+  const LoD = LoB + 1.645 * (sdLow || 0);
+  return { meanBlank, sdBlank, sdLow, LoB, LoD, nBlank: blankValues.length, nLow: lowValues.length };
 }
 
 /* ========================= Component ========================= */
@@ -166,40 +189,32 @@ export function KitValidationView() {
   const [studies, setStudies] = useKitValidations();
   const { isAdmin } = useAuth();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [tab, setTab] = useState<"summary" | "precision" | "accuracy" | "linearity">("summary");
+  const [tab, setTab] = useState<"summary" | "precision" | "accuracy" | "linearity" | "detection">("summary");
 
   const [meta, setMeta] = useState({
-    kitName: "",
-    analyte: "",
-    unit: "mg/dL",
-    lot: "",
-    manufacturer: "",
-    tea: "10",
-    claimCV: "",
-    claimBias: "",
+    kitName: "", analyte: "", unit: "mg/dL", lot: "", manufacturer: "",
+    tea: "10", claimCV: "", claimBias: "",
     startDate: new Date().toISOString().slice(0, 10),
     endDate: new Date().toISOString().slice(0, 10),
-    analyst: "",
-    notes: "",
+    analyst: "", notes: "",
   });
 
   const [repForm, setRepForm] = useState({
-    runId: "Day1",
-    date: new Date().toISOString().slice(0, 10),
-    level: "L1",
-    value: "",
+    runId: "Day1", date: new Date().toISOString().slice(0, 10), level: "L1", value: "",
   });
   const [accForm, setAccForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
-    sample: "",
-    target: "",
-    measured: "",
+    date: new Date().toISOString().slice(0, 10), sample: "", target: "", measured: "",
   });
   const [linForm, setLinForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
-    expected: "",
-    measured: "",
+    date: new Date().toISOString().slice(0, 10), expected: "", measured: "",
   });
+  // Detection capability: blank & low-level series (stored as replicates with level Blank / LoD)
+  const [detForm, setDetForm] = useState({
+    kind: "Blank" as "Blank" | "LoD",
+    date: new Date().toISOString().slice(0, 10),
+    value: "",
+  });
+  const [loqCvLimit, setLoqCvLimit] = useState("20");
 
   const selected = studies.find((s) => s.id === selectedId) || studies[0] || null;
 
@@ -231,39 +246,46 @@ export function KitValidationView() {
     setStudies((prev) => [...prev, s]);
     setSelectedId(s.id);
     setTab("precision");
-    toast({ title: "Study created ✓", description: "Enter precision replicates (recommend ≥5 days × 3 reps per level)." });
+    toast({ title: "Study created ✓" });
   };
 
   const removeStudy = (id: string) => {
     if (!isAdmin) return;
-    setStudies((prev) => prev.filter((s) => s.id !== id));
+    setStudies((prev) => prev.filter((x) => x.id !== id));
     if (selectedId === id) setSelectedId(null);
+  };
+
+  const patchSelected = (fn: (s: KitValidationStudy) => KitValidationStudy) => {
+    if (!selected) return;
+    setStudies((prev) => prev.map((s) => (s.id === selected.id ? fn(s) : s)));
   };
 
   const addReplicate = () => {
     if (!isAdmin || !selected) return;
     const v = parseFloat(repForm.value);
-    if (isNaN(v)) return toast({ title: "Enter a valid measured value" });
+    if (isNaN(v)) return toast({ title: "Enter a valid value" });
     const r: KitValReplicate = {
-      id: uid(),
-      runId: repForm.runId.trim() || "Day1",
-      date: repForm.date,
-      level: repForm.level.trim() || "L1",
-      value: v,
+      id: uid(), runId: repForm.runId.trim() || "Day1", date: repForm.date,
+      level: repForm.level.trim() || "L1", value: v,
     };
-    setStudies((prev) =>
-      prev.map((s) => (s.id === selected.id ? { ...s, replicates: [...s.replicates, r] } : s))
-    );
+    patchSelected((s) => ({ ...s, replicates: [...s.replicates, r] }));
     setRepForm((f) => ({ ...f, value: "" }));
+  };
+
+  const addDetection = () => {
+    if (!isAdmin || !selected) return;
+    const v = parseFloat(detForm.value);
+    if (isNaN(v)) return toast({ title: "Enter a valid value" });
+    const r: KitValReplicate = {
+      id: uid(), runId: detForm.kind, date: detForm.date, level: detForm.kind, value: v,
+    };
+    patchSelected((s) => ({ ...s, replicates: [...s.replicates, r] }));
+    setDetForm((f) => ({ ...f, value: "" }));
   };
 
   const deleteReplicate = (rid: string) => {
     if (!isAdmin || !selected) return;
-    setStudies((prev) =>
-      prev.map((s) =>
-        s.id === selected.id ? { ...s, replicates: s.replicates.filter((x) => x.id !== rid) } : s
-      )
-    );
+    patchSelected((s) => ({ ...s, replicates: s.replicates.filter((x) => x.id !== rid) }));
   };
 
   const addAccuracy = () => {
@@ -271,18 +293,14 @@ export function KitValidationView() {
     const target = parseFloat(accForm.target);
     const measured = parseFloat(accForm.measured);
     if (isNaN(target) || isNaN(measured) || target === 0) {
-      return toast({ title: "Enter valid target and measured (target ≠ 0)" });
+      return toast({ title: "Enter valid target & measured (target ≠ 0)" });
     }
     const p: KitValAccuracyPoint = {
-      id: uid(),
-      date: accForm.date,
+      id: uid(), date: accForm.date,
       sample: accForm.sample || `S${selected.accuracyPoints.length + 1}`,
-      target,
-      measured,
+      target, measured,
     };
-    setStudies((prev) =>
-      prev.map((s) => (s.id === selected.id ? { ...s, accuracyPoints: [...s.accuracyPoints, p] } : s))
-    );
+    patchSelected((s) => ({ ...s, accuracyPoints: [...s.accuracyPoints, p] }));
     setAccForm((f) => ({ ...f, sample: "", target: "", measured: "" }));
   };
 
@@ -292,20 +310,19 @@ export function KitValidationView() {
     const measured = parseFloat(linForm.measured);
     if (isNaN(expected) || isNaN(measured)) return toast({ title: "Enter valid expected & measured" });
     const p: KitValLinearityPoint = { id: uid(), date: linForm.date, expected, measured };
-    setStudies((prev) =>
-      prev.map((s) => (s.id === selected.id ? { ...s, linearityPoints: [...s.linearityPoints, p] } : s))
-    );
+    patchSelected((s) => ({ ...s, linearityPoints: [...s.linearityPoints, p] }));
     setLinForm((f) => ({ ...f, expected: "", measured: "" }));
   };
 
-  /* ---- derived stats ---- */
+  /* ---- derived ---- */
   const precisionByLevel = useMemo(() => {
     if (!selected) return [];
-    const levels = Array.from(new Set(selected.replicates.map((r) => r.level)));
+    const levels = Array.from(
+      new Set(selected.replicates.map((r) => r.level).filter((l) => l !== "Blank" && l !== "LoD"))
+    );
     return levels.map((level) => {
       const reps = selected.replicates.filter((r) => r.level === level);
       const an = precisionAnova(reps);
-      // EP15 verification limit often ~1.5 × manufacturer claim CV (simplified)
       const limitCV = selected.claimCV > 0 ? selected.claimCV * 1.5 : NaN;
       const passRepeat = !isNaN(limitCV) && !isNaN(an.CVr) ? an.CVr <= limitCV : null;
       const passWl = !isNaN(limitCV) && !isNaN(an.CVwl) ? an.CVwl <= limitCV : null;
@@ -327,9 +344,11 @@ export function KitValidationView() {
     const meanBias = mean(biases);
     const meanDiff = mean(diffs);
     const sdDiff = sampleSd(diffs);
-    // Bland–Altman 95% limits of agreement
-    const loaLow = meanDiff - 1.96 * sdDiff;
-    const loaHigh = meanDiff + 1.96 * sdDiff;
+    const xs = rows.map((r) => r.target);
+    const ys = rows.map((r) => r.measured);
+    const olsFit = ols(xs, ys);
+    const dem = deming(xs, ys, 1);
+    const pb = passingBablok(xs, ys);
     return {
       n: rows.length,
       meanBias,
@@ -337,10 +356,13 @@ export function KitValidationView() {
       meanRecovery: mean(rows.map((r) => r.recovery)),
       meanDiff,
       sdDiff,
-      loaLow,
-      loaHigh,
+      loaLow: meanDiff - 1.96 * sdDiff,
+      loaHigh: meanDiff + 1.96 * sdDiff,
       passTea: Math.abs(meanBias) <= selected.tea,
       rows,
+      olsFit,
+      dem,
+      pb,
     };
   }, [selected]);
 
@@ -349,6 +371,8 @@ export function KitValidationView() {
     const xs = selected.linearityPoints.map((p) => p.expected);
     const ys = selected.linearityPoints.map((p) => p.measured);
     const reg = ols(xs, ys);
+    const dem = deming(xs, ys, 1);
+    const pb = passingBablok(xs, ys);
     const points = selected.linearityPoints.map((p) => {
       const predicted = reg.slope * p.expected + reg.intercept;
       const residual = p.measured - predicted;
@@ -356,10 +380,30 @@ export function KitValidationView() {
       return { ...p, predicted, residual, devPct };
     });
     const maxAbsDevPct = Math.max(...points.map((p) => Math.abs(p.devPct || 0)));
-    return { ...reg, points, maxAbsDevPct };
+    return { ...reg, dem, pb, points, maxAbsDevPct };
   }, [selected]);
 
-  /* ---- Excel export ---- */
+  const detectionStats = useMemo(() => {
+    if (!selected) return null;
+    const blanks = selected.replicates.filter((r) => r.level === "Blank").map((r) => r.value);
+    const lows = selected.replicates.filter((r) => r.level === "LoD").map((r) => r.value);
+    if (blanks.length < 2 && lows.length < 2) return null;
+    const base = ep17LobLod(blanks.length ? blanks : [0], lows.length ? lows : blanks);
+    // Simple LoQ estimate: lowest level in precision profile where CVwl <= loqCvLimit
+    const limit = parseFloat(loqCvLimit) || 20;
+    let LoQ: number | null = null;
+    const sortedLevels = precisionByLevel
+      .filter((p) => !isNaN(p.grandMean) && !isNaN(p.CVwl))
+      .sort((a, b) => a.grandMean - b.grandMean);
+    for (const p of sortedLevels) {
+      if (p.CVwl <= limit) {
+        LoQ = p.grandMean;
+        break;
+      }
+    }
+    return { ...base, LoQ, loqCvLimit: limit };
+  }, [selected, precisionByLevel, loqCvLimit]);
+
   const exportExcel = () => {
     if (!selected) return;
     const q = (s: string | number) => `"${String(s).replace(/"/g, '""')}"`;
@@ -367,79 +411,68 @@ export function KitValidationView() {
     L.push("CLSI-ALIGNED KIT VALIDATION REPORT");
     L.push(`Generated,${new Date().toISOString()}`);
     L.push("");
-    L.push("STUDY METADATA");
-    L.push(`Kit,${q(selected.kitName)}`);
-    L.push(`Analyte,${q(selected.analyte)}`);
-    L.push(`Unit,${q(selected.unit)}`);
-    L.push(`Lot,${q(selected.lot)}`);
-    L.push(`Manufacturer,${q(selected.manufacturer)}`);
-    L.push(`TEa %,${selected.tea}`);
-    L.push(`Manufacturer claim CV %,${selected.claimCV}`);
-    L.push(`Manufacturer claim Bias %,${selected.claimBias}`);
-    L.push(`Verification CV limit (1.5x claim) %,${selected.claimCV ? selected.claimCV * 1.5 : ""}`);
-    L.push(`Start date,${selected.startDate}`);
-    L.push(`End date,${selected.endDate}`);
-    L.push(`Analyst,${q(selected.analyst)}`);
-    L.push(`Notes,${q(selected.notes)}`);
+    L.push("METADATA");
+    [
+      ["Kit", selected.kitName], ["Analyte", selected.analyte], ["Unit", selected.unit],
+      ["Lot", selected.lot], ["Manufacturer", selected.manufacturer],
+      ["TEa %", selected.tea], ["Claim CV %", selected.claimCV], ["Claim Bias %", selected.claimBias],
+      ["Start", selected.startDate], ["End", selected.endDate], ["Analyst", selected.analyst],
+      ["Notes", selected.notes],
+    ].forEach(([k, v]) => L.push(`${k},${q(v)}`));
     L.push("");
-    L.push("PRECISION SUMMARY (EP15/EP05-style nested components)");
-    L.push("Level,N,Runs,Grand mean,Sr (repeatability SD),CVr %,Sb (between-run SD),CVb %,Swl (within-lab SD),CVwl %,Claim CV %,Limit 1.5x %,Pass CVr,Pass CVwl");
+    L.push("PRECISION ANOVA-STYLE (per level)");
+    L.push("Level,N,Runs,Mean,df_within,SS_within,MS_within,df_between,SS_between,MS_between,Sr,CVr%,Sb,Swl,CVwl%,Pass");
     precisionByLevel.forEach((p) => {
-      L.push(
-        [
-          p.level, p.N, p.runs, fmt2(p.grandMean), fmt(p.Sr), fmt2(p.CVr), fmt(p.Sb), fmt2(p.CVb),
-          fmt(p.Swl), fmt2(p.CVwl), selected.claimCV, fmt2(p.limitCV),
-          p.passRepeat == null ? "" : p.passRepeat ? "PASS" : "FAIL",
-          p.passWl == null ? "" : p.passWl ? "PASS" : "FAIL",
-        ].join(",")
-      );
+      L.push([
+        p.level, p.N, p.runs, fmt2(p.grandMean), p.dfWithin, fmt(p.ssWithin), fmt(p.MSw),
+        p.dfBetween, fmt(p.ssBetween), fmt(p.MSb), fmt(p.Sr), fmt2(p.CVr), fmt(p.Sb),
+        fmt(p.Swl), fmt2(p.CVwl),
+        p.passRepeat && p.passWl ? "PASS" : p.passRepeat == null ? "" : "FAIL",
+      ].join(","));
     });
     L.push("");
-    L.push("PRECISION RAW REPLICATES");
-    L.push("Date,Run/Day,Level,Value");
+    L.push("RAW REPLICATES");
+    L.push("Date,Run,Level,Value");
     selected.replicates.forEach((r) => L.push([r.date, r.runId, r.level, r.value].join(",")));
     L.push("");
-    L.push("ACCURACY / TRUENESS");
-    L.push("Date,Sample,Target,Measured,Bias %,Recovery %,Diff (Meas-Target),Average");
+    L.push("ACCURACY");
+    L.push("Date,Sample,Target,Measured,Bias%,Recovery%");
     (accuracyStats?.rows || []).forEach((p) =>
-      L.push([p.date, q(p.sample), p.target, p.measured, fmt2(p.bias), fmt2(p.recovery), fmt(p.diff), fmt(p.avg)].join(","))
+      L.push([p.date, q(p.sample), p.target, p.measured, fmt2(p.bias), fmt2(p.recovery)].join(","))
     );
     if (accuracyStats) {
       L.push(`Mean bias %,${fmt2(accuracyStats.meanBias)}`);
-      L.push(`SD of bias %,${fmt2(accuracyStats.sdBias)}`);
-      L.push(`Mean recovery %,${fmt2(accuracyStats.meanRecovery)}`);
       L.push(`Bland-Altman mean diff,${fmt(accuracyStats.meanDiff)}`);
-      L.push(`Bland-Altman SD diff,${fmt(accuracyStats.sdDiff)}`);
-      L.push(`LoA low (mean-1.96SD),${fmt(accuracyStats.loaLow)}`);
-      L.push(`LoA high (mean+1.96SD),${fmt(accuracyStats.loaHigh)}`);
-      L.push(`TEa %,${selected.tea}`);
-      L.push(`Mean |bias| <= TEa,${accuracyStats.passTea ? "PASS" : "FAIL"}`);
+      L.push(`LoA low,${fmt(accuracyStats.loaLow)}`);
+      L.push(`LoA high,${fmt(accuracyStats.loaHigh)}`);
+      L.push(`OLS slope,${fmt(accuracyStats.olsFit.slope, 6)}`);
+      L.push(`OLS intercept,${fmt(accuracyStats.olsFit.intercept, 6)}`);
+      L.push(`Deming slope,${fmt(accuracyStats.dem.slope, 6)}`);
+      L.push(`Deming intercept,${fmt(accuracyStats.dem.intercept, 6)}`);
+      L.push(`Passing-Bablok slope,${fmt(accuracyStats.pb.slope, 6)}`);
+      L.push(`Passing-Bablok intercept,${fmt(accuracyStats.pb.intercept, 6)}`);
     }
     L.push("");
-    L.push("LINEARITY / REGRESSION (OLS)");
-    L.push("Date,Expected,Measured,Predicted,Residual,Deviation %");
+    L.push("LINEARITY");
+    L.push("Date,Expected,Measured,Predicted,Residual,Dev%");
     (linearityStats?.points || []).forEach((p) =>
       L.push([p.date, p.expected, p.measured, fmt(p.predicted), fmt(p.residual), fmt2(p.devPct)].join(","))
     );
     if (linearityStats) {
-      L.push(`Slope,${fmt(linearityStats.slope, 6)}`);
-      L.push(`Intercept,${fmt(linearityStats.intercept, 6)}`);
-      L.push(`r,${fmt(linearityStats.r, 6)}`);
-      L.push(`R-squared,${fmt(linearityStats.r2, 6)}`);
-      L.push(`Syx (residual SD),${fmt(linearityStats.syx)}`);
-      L.push(`Max |deviation| %,${fmt2(linearityStats.maxAbsDevPct)}`);
+      L.push(`OLS slope,${fmt(linearityStats.slope, 6)}`);
+      L.push(`OLS R2,${fmt(linearityStats.r2, 6)}`);
+      L.push(`Deming slope,${fmt(linearityStats.dem.slope, 6)}`);
+      L.push(`Passing-Bablok slope,${fmt(linearityStats.pb.slope, 6)}`);
     }
     L.push("");
-    L.push("FORMULAS USED");
-    L.push("Sr^2,Sum of within-run squared deviations / (N - number of runs)");
-    L.push("Sb^2,max(0, (MSb - Sr^2) / n0) where MSb is between-run mean square");
-    L.push("Swl^2,Sr^2 + Sb^2");
-    L.push("CV%,(SD/|Mean|)*100");
-    L.push("Bias%,((Measured-Target)/Target)*100");
-    L.push("Recovery%,(Measured/Target)*100");
-    L.push("Bland-Altman,diff=Measured-Target; LoA = mean(diff) ± 1.96*SD(diff)");
-    L.push("OLS,slope = Sxy/Sxx; intercept = mean(y)-slope*mean(x); R^2 = r^2");
-
+    L.push("DETECTION CAPABILITY (EP17-style)");
+    if (detectionStats) {
+      L.push(`LoB,${fmt(detectionStats.LoB)}`);
+      L.push(`LoD,${fmt(detectionStats.LoD)}`);
+      L.push(`LoQ (CV<=${detectionStats.loqCvLimit}%),${detectionStats.LoQ ?? ""}`);
+      L.push(`n blank,${detectionStats.nBlank}`);
+      L.push(`n low,${detectionStats.nLow}`);
+    }
     const blob = new Blob(["\uFEFF" + L.join("\n")], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -454,19 +487,19 @@ export function KitValidationView() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <h1 className="text-2xl font-extrabold mb-1 flex items-center gap-2">
         <FlaskConical className="w-6 h-6 text-primary" />
-        Kit Validation (CLSI EP15 / EP05-style)
+        Kit Validation (CLSI EP05 / EP15 / EP17)
       </h1>
       <p className="text-muted-foreground text-sm mb-4">
-        Production verification for biochemistry kits: nested precision (Sr, Sb, Swl), trueness (bias/recovery),
-        Bland–Altman, linearity regression, dates and Excel export. <b>Admin only</b> to edit.
+        Full production verification: nested precision ANOVA, trueness, Bland–Altman, OLS / Deming / Passing–Bablok,
+        linearity, LoB/LoD/LoQ and Excel export. <b>Admin only</b> to edit.
       </p>
 
       <div className="mb-6 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-[12.5px] text-sky-900 flex gap-2">
         <Info className="w-4 h-4 shrink-0 mt-0.5" />
         <div>
-          <b>Recommended protocol (EP15-style):</b> for each level (L1/L2/L3), run <b>≥ 5 days</b> × <b>3 replicates</b> per day.
-          Use the same <b>Run/Day ID</b> for replicates of one day (Within-run). Change Run/Day ID across days (Between-run).
-          Verification limit for CV is set to <b>1.5 × manufacturer claim CV</b> when claim is entered.
+          <b>Suggested protocol:</b> Precision — ≥5 days × 3 replicates per level (same Run/Day ID within a day).
+          Accuracy — reference/target samples across the measuring range. Linearity — ≥5 concentrations.
+          Detection — ≥20 blank + ≥20 low-level measurements when possible (EP17).
         </div>
       </div>
 
@@ -548,7 +581,7 @@ export function KitValidationView() {
         {/* Main */}
         {!selected ? (
           <div className="bg-white rounded-2xl border border-dashed p-10 text-center text-muted-foreground">
-            Create a study (admin), then enter precision replicates, accuracy and linearity points. Charts and PASS/FAIL appear automatically.
+            Create a study (admin), then enter data in the tabs. All statistics are calculated automatically.
           </div>
         ) : (
           <div className="space-y-4">
@@ -558,7 +591,6 @@ export function KitValidationView() {
                 <div className="text-xs text-muted-foreground">
                   Lot {selected.lot || "—"} · {selected.startDate} → {selected.endDate} · TEa ±{selected.tea}%
                   {selected.claimCV ? ` · Claim CV ${selected.claimCV}%` : ""}
-                  {selected.analyst ? ` · ${selected.analyst}` : ""}
                 </div>
               </div>
               <button onClick={exportExcel} className="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-sm font-bold rounded-lg px-4 py-2 hover:bg-emerald-700">
@@ -569,9 +601,10 @@ export function KitValidationView() {
             <div className="flex flex-wrap gap-1 border-b pb-2">
               {([
                 ["summary", "Summary"],
-                ["precision", "Precision (Sr / Swl)"],
-                ["accuracy", "Accuracy + Bland–Altman"],
-                ["linearity", "Linearity + Regression"],
+                ["precision", "Precision ANOVA"],
+                ["accuracy", "Accuracy / Regression"],
+                ["linearity", "Linearity"],
+                ["detection", "LoB / LoD / LoQ"],
               ] as const).map(([id, label]) => (
                 <button
                   key={id}
@@ -593,14 +626,9 @@ export function KitValidationView() {
                     <div className="text-xs text-muted-foreground">Level {p.level}</div>
                     <div className="font-bold text-lg ltr-inline">Mean {fmt2(p.grandMean)}</div>
                     <div className="text-sm mt-2 space-y-1">
-                      <div>Sr (repeatability): <b className="ltr-inline">{fmt(p.Sr)}</b> · CV <b className="ltr-inline">{fmt2(p.CVr)}%</b></div>
-                      <div>Swl (within-lab): <b className="ltr-inline">{fmt(p.Swl)}</b> · CV <b className="ltr-inline">{fmt2(p.CVwl)}%</b></div>
+                      <div>Sr <b className="ltr-inline">{fmt(p.Sr)}</b> · CVr <b className="ltr-inline">{fmt2(p.CVr)}%</b></div>
+                      <div>Swl <b className="ltr-inline">{fmt(p.Swl)}</b> · CVwl <b className="ltr-inline">{fmt2(p.CVwl)}%</b></div>
                       <div className="text-xs text-muted-foreground">N={p.N} · runs={p.runs}</div>
-                      {p.passRepeat != null && (
-                        <div className={`text-xs font-bold ${p.passRepeat && p.passWl ? "text-emerald-600" : "text-red-600"}`}>
-                          {p.passRepeat && p.passWl ? "✓ CV within 1.5× claim" : "✗ CV exceeds 1.5× claim"}
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -608,26 +636,24 @@ export function KitValidationView() {
                   <div className="bg-white rounded-2xl border p-4">
                     <div className="text-xs text-muted-foreground">Trueness</div>
                     <div className="font-bold text-lg ltr-inline">Bias {fmt2(accuracyStats.meanBias)}%</div>
-                    <div className="text-sm">Recovery <b className="ltr-inline">{fmt2(accuracyStats.meanRecovery)}%</b></div>
-                    <div className={`text-xs mt-1 font-bold ${accuracyStats.passTea ? "text-emerald-600" : "text-red-600"}`}>
-                      {accuracyStats.passTea ? "✓ |bias| ≤ TEa" : "✗ |bias| > TEa"}
-                    </div>
+                    <div className="text-sm">OLS slope <b className="ltr-inline">{fmt(accuracyStats.olsFit.slope, 4)}</b></div>
+                    <div className="text-sm">Deming <b className="ltr-inline">{fmt(accuracyStats.dem.slope, 4)}</b></div>
+                    <div className="text-sm">P–Bablok <b className="ltr-inline">{fmt(accuracyStats.pb.slope, 4)}</b></div>
                   </div>
                 )}
-                {linearityStats && (
+                {detectionStats && (
                   <div className="bg-white rounded-2xl border p-4">
-                    <div className="text-xs text-muted-foreground">Linearity (OLS)</div>
+                    <div className="text-xs text-muted-foreground">Detection (EP17)</div>
                     <div className="text-sm mt-1 space-y-1">
-                      <div>Slope <b className="ltr-inline">{fmt(linearityStats.slope, 4)}</b></div>
-                      <div>Intercept <b className="ltr-inline">{fmt(linearityStats.intercept, 4)}</b></div>
-                      <div>R² <b className="ltr-inline">{fmt(linearityStats.r2, 4)}</b></div>
-                      <div>Max |dev| <b className="ltr-inline">{fmt2(linearityStats.maxAbsDevPct)}%</b></div>
+                      <div>LoB <b className="ltr-inline">{fmt2(detectionStats.LoB)}</b></div>
+                      <div>LoD <b className="ltr-inline">{fmt2(detectionStats.LoD)}</b></div>
+                      <div>LoQ <b className="ltr-inline">{detectionStats.LoQ != null ? fmt2(detectionStats.LoQ) : "—"}</b></div>
                     </div>
                   </div>
                 )}
-                {!precisionByLevel.length && !accuracyStats && !linearityStats && (
+                {!precisionByLevel.length && !accuracyStats && (
                   <div className="col-span-full text-sm text-muted-foreground border border-dashed rounded-xl p-8 text-center">
-                    Enter data in Precision / Accuracy / Linearity tabs.
+                    Enter data in the other tabs to populate the summary.
                   </div>
                 )}
               </div>
@@ -644,14 +670,14 @@ export function KitValidationView() {
                     </div>
                     <div>
                       <label className={labelCls}>Run / Day ID</label>
-                      <input className={inputCls + " w-24"} value={repForm.runId} onChange={(e) => setRepForm({ ...repForm, runId: e.target.value })} placeholder="Day1" />
+                      <input className={inputCls + " w-24"} value={repForm.runId} onChange={(e) => setRepForm({ ...repForm, runId: e.target.value })} />
                     </div>
                     <div>
                       <label className={labelCls}>Level</label>
-                      <input className={inputCls + " w-20"} value={repForm.level} onChange={(e) => setRepForm({ ...repForm, level: e.target.value })} placeholder="L1" />
+                      <input className={inputCls + " w-20"} value={repForm.level} onChange={(e) => setRepForm({ ...repForm, level: e.target.value })} />
                     </div>
                     <div>
-                      <label className={labelCls}>Value ({selected.unit})</label>
+                      <label className={labelCls}>Value</label>
                       <input type="number" step="any" className={inputCls + " w-28"} value={repForm.value} onChange={(e) => setRepForm({ ...repForm, value: e.target.value })} />
                     </div>
                     <button onClick={addReplicate} className="bg-primary text-white rounded-lg px-4 py-2 text-sm font-bold">Add</button>
@@ -659,7 +685,7 @@ export function KitValidationView() {
                 )}
 
                 {precisionByLevel.length > 0 && (
-                  <div className="bg-white rounded-2xl border p-4 h-72" dir="ltr">
+                  <div className="bg-white rounded-2xl border p-4 h-64" dir="ltr">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={precisionByLevel}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -667,29 +693,32 @@ export function KitValidationView() {
                         <YAxis unit="%" />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="CVr" name="CVr % (repeatability)" fill="#0d6fb8" />
-                        <Bar dataKey="CVwl" name="CVwl % (within-lab)" fill="#f59e0b" />
-                        {selected.claimCV > 0 && <ReferenceLine y={selected.claimCV} stroke="#16a34a" label="Claim CV" />}
-                        {selected.claimCV > 0 && <ReferenceLine y={selected.claimCV * 1.5} stroke="#dc2626" strokeDasharray="4 4" label="1.5× claim" />}
+                        <Bar dataKey="CVr" name="CVr %" fill="#0d6fb8" />
+                        <Bar dataKey="CVwl" name="CVwl %" fill="#f59e0b" />
+                        {selected.claimCV > 0 && <ReferenceLine y={selected.claimCV} stroke="#16a34a" label="Claim" />}
+                        {selected.claimCV > 0 && <ReferenceLine y={selected.claimCV * 1.5} stroke="#dc2626" strokeDasharray="4 4" label="1.5×" />}
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 )}
 
                 <div className="bg-white rounded-2xl border overflow-auto">
+                  <div className="px-4 pt-3 text-xs font-bold text-muted-foreground">ANOVA-style components (EP05 / EP15)</div>
                   <table className="w-full text-sm">
                     <thead className="bg-secondary/50">
                       <tr>
                         <th className="px-3 py-2 text-left">Level</th>
                         <th className="px-3 py-2 text-left">N</th>
                         <th className="px-3 py-2 text-left">Runs</th>
-                        <th className="px-3 py-2 text-left">Mean</th>
+                        <th className="px-3 py-2 text-left">df_w</th>
+                        <th className="px-3 py-2 text-left">MS_w</th>
+                        <th className="px-3 py-2 text-left">df_b</th>
+                        <th className="px-3 py-2 text-left">MS_b</th>
                         <th className="px-3 py-2 text-left">Sr</th>
-                        <th className="px-3 py-2 text-left">CVr %</th>
                         <th className="px-3 py-2 text-left">Sb</th>
                         <th className="px-3 py-2 text-left">Swl</th>
-                        <th className="px-3 py-2 text-left">CVwl %</th>
-                        <th className="px-3 py-2 text-left">Result</th>
+                        <th className="px-3 py-2 text-left">CVr%</th>
+                        <th className="px-3 py-2 text-left">CVwl%</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -698,46 +727,38 @@ export function KitValidationView() {
                           <td className="px-3 py-2 font-medium">{p.level}</td>
                           <td className="px-3 py-2 ltr-inline">{p.N}</td>
                           <td className="px-3 py-2 ltr-inline">{p.runs}</td>
-                          <td className="px-3 py-2 ltr-inline">{fmt2(p.grandMean)}</td>
+                          <td className="px-3 py-2 ltr-inline">{p.dfWithin}</td>
+                          <td className="px-3 py-2 ltr-inline">{fmt(p.MSw)}</td>
+                          <td className="px-3 py-2 ltr-inline">{p.dfBetween}</td>
+                          <td className="px-3 py-2 ltr-inline">{fmt(p.MSb)}</td>
                           <td className="px-3 py-2 ltr-inline">{fmt(p.Sr)}</td>
-                          <td className="px-3 py-2 ltr-inline">{fmt2(p.CVr)}</td>
                           <td className="px-3 py-2 ltr-inline">{fmt(p.Sb)}</td>
                           <td className="px-3 py-2 ltr-inline">{fmt(p.Swl)}</td>
+                          <td className="px-3 py-2 ltr-inline">{fmt2(p.CVr)}</td>
                           <td className="px-3 py-2 ltr-inline">{fmt2(p.CVwl)}</td>
-                          <td className="px-3 py-2 text-xs font-bold">
-                            {p.passRepeat == null ? "—" : p.passRepeat && p.passWl ? (
-                              <span className="text-emerald-600">PASS</span>
-                            ) : (
-                              <span className="text-red-600">FAIL</span>
-                            )}
-                          </td>
                         </tr>
                       ))}
                       {!precisionByLevel.length && (
-                        <tr>
-                          <td colSpan={10} className="px-3 py-8 text-center text-muted-foreground">
-                            No replicates yet. Same Run/Day ID = within-run; different IDs = between-run.
-                          </td>
-                        </tr>
+                        <tr><td colSpan={12} className="px-3 py-8 text-center text-muted-foreground">No precision data yet.</td></tr>
                       )}
                     </tbody>
                   </table>
                 </div>
 
-                {selected.replicates.length > 0 && (
-                  <div className="bg-white rounded-2xl border overflow-auto max-h-56">
+                {selected.replicates.filter((r) => r.level !== "Blank" && r.level !== "LoD").length > 0 && (
+                  <div className="bg-white rounded-2xl border overflow-auto max-h-48">
                     <table className="w-full text-sm">
                       <thead className="bg-secondary/50 sticky top-0">
                         <tr>
                           <th className="px-3 py-2 text-left">Date</th>
-                          <th className="px-3 py-2 text-left">Run/Day</th>
+                          <th className="px-3 py-2 text-left">Run</th>
                           <th className="px-3 py-2 text-left">Level</th>
                           <th className="px-3 py-2 text-left">Value</th>
                           <th className="px-3 py-2"></th>
                         </tr>
                       </thead>
                       <tbody>
-                        {selected.replicates.map((r) => (
+                        {selected.replicates.filter((r) => r.level !== "Blank" && r.level !== "LoD").map((r) => (
                           <tr key={r.id} className="border-t">
                             <td className="px-3 py-2 ltr-inline">{r.date}</td>
                             <td className="px-3 py-2">{r.runId}</td>
@@ -786,8 +807,27 @@ export function KitValidationView() {
 
                 {accuracyStats && (
                   <>
-                    <div className="bg-white rounded-2xl border p-4 h-72" dir="ltr">
-                      <div className="text-xs text-muted-foreground mb-1">Bias % vs TEa (±{selected.tea}%)</div>
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      <div className="bg-white rounded-2xl border p-3 text-sm">
+                        <div className="text-xs text-muted-foreground">OLS</div>
+                        <div>Slope <b className="ltr-inline">{fmt(accuracyStats.olsFit.slope, 4)}</b></div>
+                        <div>Intercept <b className="ltr-inline">{fmt(accuracyStats.olsFit.intercept, 4)}</b></div>
+                        <div>R² <b className="ltr-inline">{fmt(accuracyStats.olsFit.r2, 4)}</b></div>
+                      </div>
+                      <div className="bg-white rounded-2xl border p-3 text-sm">
+                        <div className="text-xs text-muted-foreground">Deming (λ=1)</div>
+                        <div>Slope <b className="ltr-inline">{fmt(accuracyStats.dem.slope, 4)}</b></div>
+                        <div>Intercept <b className="ltr-inline">{fmt(accuracyStats.dem.intercept, 4)}</b></div>
+                      </div>
+                      <div className="bg-white rounded-2xl border p-3 text-sm">
+                        <div className="text-xs text-muted-foreground">Passing–Bablok</div>
+                        <div>Slope <b className="ltr-inline">{fmt(accuracyStats.pb.slope, 4)}</b></div>
+                        <div>Intercept <b className="ltr-inline">{fmt(accuracyStats.pb.intercept, 4)}</b></div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border p-4 h-64" dir="ltr">
+                      <div className="text-xs text-muted-foreground mb-1">Bias % (TEa ±{selected.tea}%)</div>
                       <ResponsiveContainer width="100%" height="90%">
                         <BarChart data={accuracyStats.rows}>
                           <CartesianGrid strokeDasharray="3 3" />
@@ -805,9 +845,10 @@ export function KitValidationView() {
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="bg-white rounded-2xl border p-4 h-72" dir="ltr">
+
+                    <div className="bg-white rounded-2xl border p-4 h-64" dir="ltr">
                       <div className="text-xs text-muted-foreground mb-1">
-                        Bland–Altman: mean diff={fmt(accuracyStats.meanDiff)}, LoA [{fmt(accuracyStats.loaLow)}, {fmt(accuracyStats.loaHigh)}]
+                        Bland–Altman · mean={fmt(accuracyStats.meanDiff)} · LoA [{fmt(accuracyStats.loaLow)}, {fmt(accuracyStats.loaHigh)}]
                       </div>
                       <ResponsiveContainer width="100%" height="90%">
                         <ScatterChart>
@@ -879,22 +920,35 @@ export function KitValidationView() {
                 )}
 
                 {linearityStats && (
-                  <div className="bg-white rounded-2xl border p-4 h-80" dir="ltr">
-                    <div className="text-xs text-muted-foreground mb-2">
-                      y = {fmt(linearityStats.slope, 4)}·x + {fmt(linearityStats.intercept, 4)} · R² = {fmt(linearityStats.r2, 4)} · Syx = {fmt(linearityStats.syx)}
+                  <>
+                    <div className="grid sm:grid-cols-3 gap-3 text-sm">
+                      <div className="bg-white rounded-2xl border p-3">
+                        <div className="text-xs text-muted-foreground">OLS</div>
+                        <div>Slope <b className="ltr-inline">{fmt(linearityStats.slope, 4)}</b> · R² <b className="ltr-inline">{fmt(linearityStats.r2, 4)}</b></div>
+                      </div>
+                      <div className="bg-white rounded-2xl border p-3">
+                        <div className="text-xs text-muted-foreground">Deming</div>
+                        <div>Slope <b className="ltr-inline">{fmt(linearityStats.dem.slope, 4)}</b></div>
+                      </div>
+                      <div className="bg-white rounded-2xl border p-3">
+                        <div className="text-xs text-muted-foreground">Passing–Bablok</div>
+                        <div>Slope <b className="ltr-inline">{fmt(linearityStats.pb.slope, 4)}</b></div>
+                      </div>
                     </div>
-                    <ResponsiveContainer width="100%" height="90%">
-                      <ComposedChart data={linearityStats.points}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="expected" name="Expected" />
-                        <YAxis name="Measured" />
-                        <Tooltip />
-                        <Legend />
-                        <Scatter dataKey="measured" name="Measured" fill="#0d6fb8" />
-                        <Line type="linear" dataKey="predicted" name="OLS fit" stroke="#dc2626" dot={false} />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </div>
+                    <div className="bg-white rounded-2xl border p-4 h-72" dir="ltr">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={linearityStats.points}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="expected" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Scatter dataKey="measured" name="Measured" fill="#0d6fb8" />
+                          <Line type="linear" dataKey="predicted" name="OLS fit" stroke="#dc2626" dot={false} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </>
                 )}
 
                 <div className="bg-white rounded-2xl border overflow-auto">
@@ -910,14 +964,14 @@ export function KitValidationView() {
                       </tr>
                     </thead>
                     <tbody>
-                      {(linearityStats?.points || selected.linearityPoints).map((p: { id: string; date: string; expected: number; measured: number; predicted?: number; residual?: number; devPct?: number }) => (
+                      {(linearityStats?.points || []).map((p) => (
                         <tr key={p.id} className="border-t">
                           <td className="px-3 py-2 ltr-inline">{p.date}</td>
                           <td className="px-3 py-2 ltr-inline">{p.expected}</td>
                           <td className="px-3 py-2 ltr-inline">{p.measured}</td>
-                          <td className="px-3 py-2 ltr-inline">{p.predicted != null ? fmt(p.predicted) : "—"}</td>
-                          <td className="px-3 py-2 ltr-inline">{p.residual != null ? fmt(p.residual) : "—"}</td>
-                          <td className="px-3 py-2 ltr-inline">{p.devPct != null ? fmt2(p.devPct) : "—"}</td>
+                          <td className="px-3 py-2 ltr-inline">{fmt(p.predicted)}</td>
+                          <td className="px-3 py-2 ltr-inline">{fmt(p.residual)}</td>
+                          <td className="px-3 py-2 ltr-inline">{fmt2(p.devPct)}</td>
                         </tr>
                       ))}
                       {!selected.linearityPoints.length && (
@@ -928,9 +982,106 @@ export function KitValidationView() {
                 </div>
               </div>
             )}
+
+            {/* DETECTION EP17 */}
+            {tab === "detection" && (
+              <div className="space-y-4">
+                {isAdmin && (
+                  <div className="bg-white rounded-2xl border p-4 flex flex-wrap gap-2 items-end">
+                    <div>
+                      <label className={labelCls}>Series</label>
+                      <select className={inputCls + " w-28"} value={detForm.kind} onChange={(e) => setDetForm({ ...detForm, kind: e.target.value as "Blank" | "LoD" })}>
+                        <option value="Blank">Blank</option>
+                        <option value="LoD">Low (LoD)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelCls}>Date</label>
+                      <input type="date" className={inputCls + " w-36"} value={detForm.date} onChange={(e) => setDetForm({ ...detForm, date: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Value</label>
+                      <input type="number" step="any" className={inputCls + " w-28"} value={detForm.value} onChange={(e) => setDetForm({ ...detForm, value: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>LoQ CV limit %</label>
+                      <input type="number" step="any" className={inputCls + " w-24"} value={loqCvLimit} onChange={(e) => setLoqCvLimit(e.target.value)} />
+                    </div>
+                    <button onClick={addDetection} className="bg-primary text-white rounded-lg px-4 py-2 text-sm font-bold">Add</button>
+                  </div>
+                )}
+
+                {detectionStats ? (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div className="bg-white rounded-2xl border p-4">
+                      <div className="text-xs text-muted-foreground">LoB</div>
+                      <div className="text-xl font-bold ltr-inline">{fmt2(detectionStats.LoB)}</div>
+                      <div className="text-xs text-muted-foreground">n blank = {detectionStats.nBlank}</div>
+                    </div>
+                    <div className="bg-white rounded-2xl border p-4">
+                      <div className="text-xs text-muted-foreground">LoD</div>
+                      <div className="text-xl font-bold ltr-inline">{fmt2(detectionStats.LoD)}</div>
+                      <div className="text-xs text-muted-foreground">n low = {detectionStats.nLow}</div>
+                    </div>
+                    <div className="bg-white rounded-2xl border p-4">
+                      <div className="text-xs text-muted-foreground">LoQ (CV ≤ {detectionStats.loqCvLimit}%)</div>
+                      <div className="text-xl font-bold ltr-inline">{detectionStats.LoQ != null ? fmt2(detectionStats.LoQ) : "—"}</div>
+                      <div className="text-xs text-muted-foreground">from precision profile</div>
+                    </div>
+                    <div className="bg-white rounded-2xl border p-4 text-sm">
+                      <div>Mean blank <b className="ltr-inline">{fmt2(detectionStats.meanBlank)}</b></div>
+                      <div>SD blank <b className="ltr-inline">{fmt(detectionStats.sdBlank)}</b></div>
+                      <div>SD low <b className="ltr-inline">{fmt(detectionStats.sdLow)}</b></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border border-dashed rounded-xl p-8 text-center text-sm text-muted-foreground">
+                    Add Blank replicates and Low-level (LoD) replicates. Optionally set precision levels to estimate LoQ.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* ===================== English glossary ===================== */}
+      <section className="mt-10 border-t pt-8">
+        <h2 className="text-lg font-extrabold mb-3">What do these options mean? (English guide)</h2>
+        <div className="grid md:grid-cols-2 gap-4 text-[13px] leading-relaxed text-muted-foreground">
+          <div className="bg-white rounded-2xl border p-4 space-y-2">
+            <p><b className="text-foreground">New study / metadata</b> — Identify the kit lot under test: kit name, analyte, unit, manufacturer claims (CV%, bias%), allowable total error (TEa%), study dates and analyst. These fields appear on the Excel report.</p>
+            <p><b className="text-foreground">TEa %</b> — Total allowable error goal. Mean |bias| is compared against this limit for a simple PASS/FAIL on trueness.</p>
+            <p><b className="text-foreground">Claim CV % / Claim Bias %</b> — Manufacturer specifications from the kit insert. Precision CVs are checked against a simplified verification limit of <b>1.5 × claim CV</b> (common EP15-style rule of thumb).</p>
+          </div>
+          <div className="bg-white rounded-2xl border p-4 space-y-2">
+            <p><b className="text-foreground">Precision (Within-run / Between-run)</b> — Enter replicates with the same <b>Run/Day ID</b> for repeatability and different IDs for between-run variation. Recommended: ≥5 days × 3 replicates per level.</p>
+            <p><b className="text-foreground">Sr (repeatability SD)</b> — Within-run standard deviation from nested ANOVA components (EP05/EP15 style).</p>
+            <p><b className="text-foreground">Sb</b> — Between-run SD component. <b>Swl</b> — Within-laboratory SD = √(Sr² + Sb²). <b>CVr / CVwl</b> — those SDs as percent of the mean.</p>
+            <p><b className="text-foreground">ANOVA table (df, MS)</b> — Degrees of freedom and mean squares used to derive Sr and Sb, similar in spirit to CLSI multi-day precision tables.</p>
+          </div>
+          <div className="bg-white rounded-2xl border p-4 space-y-2">
+            <p><b className="text-foreground">Accuracy / Trueness</b> — Compare measured values to assigned/reference targets. Bias% = (Measured − Target) / Target × 100. Recovery% = Measured / Target × 100.</p>
+            <p><b className="text-foreground">Bland–Altman</b> — Plots (Measured − Target) versus average of the two. Shows mean difference and 95% limits of agreement (mean ± 1.96 SD).</p>
+            <p><b className="text-foreground">OLS regression</b> — Ordinary least squares fit of Measured vs Target/Expected (assumes error mainly in Y).</p>
+            <p><b className="text-foreground">Deming regression</b> — Allows measurement error in both X and Y (default λ = 1, equal error variance). Preferred over OLS for method comparison.</p>
+            <p><b className="text-foreground">Passing–Bablok</b> — Non-parametric regression robust to outliers; slope from the median of pairwise slopes. Widely used in clinical method comparison (CLSI EP09 context).</p>
+          </div>
+          <div className="bg-white rounded-2xl border p-4 space-y-2">
+            <p><b className="text-foreground">Linearity</b> — Enter expected vs measured concentrations across the measuring range. OLS fit, residuals and % deviation are calculated; Deming and Passing–Bablok slopes are also reported.</p>
+            <p><b className="text-foreground">LoB (Limit of Blank)</b> — Highest apparent analyte concentration expected in blank samples (EP17-style): mean_blank + 1.645 × SD_blank.</p>
+            <p><b className="text-foreground">LoD (Limit of Detection)</b> — Lowest concentration likely to be distinguished from blank: LoB + 1.645 × SD_low.</p>
+            <p><b className="text-foreground">LoQ (Limit of Quantitation)</b> — Estimated here as the lowest precision-profile mean where within-lab CV% is ≤ the chosen limit (default 20%).</p>
+            <p><b className="text-foreground">Export Excel (CSV)</b> — Downloads a UTF-8 CSV (opens in Excel) with metadata, ANOVA precision, raw data, accuracy, regressions, linearity and detection limits.</p>
+            <p><b className="text-foreground">Admin only</b> — Creating studies and entering/deleting points requires admin login; others can view exported concepts after data exist on the device.</p>
+          </div>
+        </div>
+        <p className="mt-4 text-[12px] text-muted-foreground">
+          Note: This tool implements widely used CLSI <i>concepts and formulas</i> (EP05/EP15 precision components, EP09-style regressions, EP17 detection limits)
+          for kit production documentation. It is not a certified substitute for commercial biostatistics packages or the full official CLSI calculation workbooks;
+          always cross-check critical regulatory submissions against the current CLSI documents and your QMS.
+        </p>
+      </section>
     </div>
   );
 }
