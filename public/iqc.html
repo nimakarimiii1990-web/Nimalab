@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8"/>
@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ============ THEME â€” to perfectly match your site, edit only these lines ============ */
+/* ============ THEME — to perfectly match your site, edit only these lines ============ */
 :root{
   --primary:#1d6ac1;                            /* your site's blue */
   --bg:#f8fafc; --card:#ffffff; --line:#e2e8f0;
@@ -81,24 +81,25 @@ tbody tr:hover{background:#f8fafc}
   <div class="nav-r">
     <a href="/">Home</a>
     <a href="/#/tests">Lab Tests</a>
+    <a href="/#/qc">Quality Control</a>
     <a href="/#/accuracy">Accuracy</a>
     <a href="/#/analyzer">Analyzer</a>
     <a href="/#/help">Help</a>
-    <a class="active" href="#top">Quality Control</a>
+    <a class="active" href="#top">IQC Tool</a>
   </div>
 </div></nav>
 <div class="page-head" id="top">
-  <h1><span class="ic">ًں“ˆ</span> Internal Quality Control (IQC)</h1>
-  <p>Levey-Jennings chart with Westgard rules (1-2s, 1-3s, 2-2s, R-4s, 3-1s, 4-1s, 10x) and the sigma metric â€” data is stored on your own device. Mean, SD, CV% and Bias% are calculated automatically; you only enter the daily values.</p>
+  <h1><span class="ic">📈</span> Internal Quality Control (IQC)</h1>
+  <p>Levey-Jennings chart with Westgard rules (1-2s, 1-3s, 2-2s, R-4s, 3-1s, 4-1s, 10x) and the sigma metric — data is stored on your own device. Mean, SD, CV% and Bias% are calculated automatically; you only enter the daily values.</p>
 </div>
 
 <div class="wrap">
 
 <div class="card">
-  <h2>ًں§ھ New QC series <span class="hint">â€” the full catalog of <b id="catCount"></b> QC-able tests of your program is built in; set up each analyte once per control level</span></h2>
+  <h2>🧪 New QC series <span class="hint">— the full catalog of <b id="catCount"></b> QC-able tests of your program is built in; set up each analyte once per control level</span></h2>
   <div class="grid2" style="margin-bottom:12px">
     <select id="tCat" onchange="fillDatalist()"></select>
-    <input id="tName" list="testList" placeholder="Analyte name â€” type to search all tests (e.g. Glucose, TSH, Troponin I)">
+    <input id="tName" list="testList" placeholder="Analyte name — type to search all tests (e.g. Glucose, TSH, Troponin I)">
   </div>
   <datalist id="testList"></datalist>
   <div class="grid2" style="margin-bottom:12px">
@@ -106,11 +107,11 @@ tbody tr:hover{background:#f8fafc}
     <select id="tLevel"><option value="1">Normal (Level 1)</option><option value="2">Pathological (Level 2)</option></select>
   </div>
   <div class="grid2" style="margin-bottom:12px">
-    <input id="tMean" type="number" step="any" placeholder="Target Mean â€” from control insert (optional)">
-    <input id="tSD" type="number" step="any" placeholder="Target SD â€” from control insert (optional)">
+    <input id="tMean" type="number" step="any" placeholder="Target Mean — from control insert (optional)">
+    <input id="tSD" type="number" step="any" placeholder="Target SD — from control insert (optional)">
   </div>
   <div class="row" style="margin-bottom:12px">
-    <div><input id="tTea" type="number" step="any" placeholder="TEa % â€” for sigma (auto-filled, editable)"></div>
+    <div><input id="tTea" type="number" step="any" placeholder="TEa % — for sigma (auto-filled, editable)"></div>
     <div class="note" style="flex:1.4">Pick an analyte from the catalog â†’ unit and TEa % (where a CLIA limit exists) fill automatically. Bias %, CV %, Mean and SD are calculated from your daily results.</div>
   </div>
   <button class="btn" onclick="addTest()">+ Create series</button>
@@ -118,7 +119,7 @@ tbody tr:hover{background:#f8fafc}
 </div>
 
 <div class="card">
-  <h2>â‍• Add daily result</h2>
+  <h2>➕ Add daily result</h2>
   <div class="row">
     <div><select id="tid"></select></div>
     <div><input id="eDate" type="date"></div>
@@ -130,13 +131,13 @@ tbody tr:hover{background:#f8fafc}
 
 <div class="card" id="statsCard">
   <div class="card-h">
-    <h2>ًں“ٹ Auto-calculated statistics</h2>
+    <h2>📊 Auto-calculated statistics</h2>
     <div class="row" style="gap:8px">
       <div style="min-width:170px"><select id="win" onchange="renderAll()">
         <option value="20">Last 20 points</option><option value="30">Last 30 points</option><option value="all">All data</option>
       </select></div>
       <button class="btn ghost sm" style="padding:10px 13px" onclick="exportCSV()">â¬‡ Export CSV</button>
-      <button class="btn ghost sm" style="padding:10px 13px" onclick="backup()">ًں’¾ Backup</button>
+      <button class="btn ghost sm" style="padding:10px 13px" onclick="backup()">’¾ Backup</button>
       <button class="btn ghost sm" style="padding:10px 13px" onclick="$('restoreFile').click()">â¬† Restore</button>
       <button class="btn red sm" style="padding:10px 13px" onclick="clearData()">Clear data</button>
     </div>
@@ -146,13 +147,13 @@ tbody tr:hover{background:#f8fafc}
 </div>
 
 <div class="card">
-  <h2>ًں“ˆ Levey-Jennings chart</h2>
+  <h2>📈 Levey-Jennings chart</h2>
   <div id="chart" class="chart-wrap"></div>
-  <p class="muted" style="margin:10px 0 0">Hover a point for details â€” ًںں¢ Accept &nbsp;آ·&nbsp; ًںں  Warning (1-2s) &nbsp;آ·&nbsp; ًں”´ Reject (Westgard violation)</p>
+  <p class="muted" style="margin:10px 0 0">Hover a point for details — 🟢 Accept · 🟠 Warning (1-2s) · 🔴 Reject (Westgard violation)</p>
 </div>
 
 <div class="card">
-  <h2>ًں§¾ Recent results &amp; Westgard rules</h2>
+  <h2>🧾 Recent results &amp; Westgard rules</h2>
   <div class="tbl"><div id="ptable"></div></div>
 </div>
 
@@ -167,7 +168,7 @@ const CAT=[
 ["25-Hydroxy Vitamin D","ng/mL","biochem"],
 ["2h OGTT Glucose","mg/dL","biochem"],
 ["Albumin","g/dL","biochem",10],
-["Ammonia","آµg/dL","biochem"],
+["Ammonia","µg/dL","biochem"],
 ["Anion Gap (calc)","mEq/L","biochem"],
 ["Apo A1","mg/dL","biochem"],
 ["Apo B","mg/dL","biochem"],
@@ -183,24 +184,24 @@ const CAT=[
 ["Ceruloplasmin","mg/dL","biochem"],
 ["Chloride (Cl)","mEq/L","biochem"],
 ["CO2 (Bicarbonate)","mEq/L","biochem"],
-["Copper","آµg/dL","biochem"],
+["Copper","µg/dL","biochem"],
 ["Corrected Ca (calc)","mg/dL","biochem"],
 ["Corrected Na (calc)","mEq/L","biochem"],
 ["Creatinine","mg/dL","biochem",15],
 ["Cystatin C","mg/L","biochem"],
 ["Direct Bilirubin","mg/dL","biochem",20],
 ["Direct LDL-C","mg/dL","biochem"],
-["eGFR CKD-EPI 2021","mL/min/1.73mآ²","biochem"],
+["eGFR CKD-EPI 2021","mL/min/1.73m²","biochem"],
 ["Fasting Glucose","mg/dL","biochem",10],
-["Fasting Insulin","آµIU/mL","biochem"],
+["Fasting Insulin","µIU/mL","biochem"],
 ["Ferritin","ng/mL","biochem",20],
 ["Folate","ng/mL","biochem"],
 ["Free Kappa Light Chain","mg/L","biochem"],
 ["Free Lambda Light Chain","mg/L","biochem"],
-["Fructosamine","آµmol/L","biochem"],
+["Fructosamine","µmol/L","biochem"],
 ["HbA1c","%","biochem",6],
 ["HDL Cholesterol","mg/dL","biochem",30],
-["Homocysteine","آµmol/L","biochem"],
+["Homocysteine","µmol/L","biochem"],
 ["hs-CRP","mg/L","biochem"],
 ["Ionized Calcium","mmol/L","biochem"],
 ["Lactate","mmol/L","biochem"],
@@ -214,21 +215,21 @@ const CAT=[
 ["Potassium (K)","mEq/L","biochem",6],
 ["Prealbumin","mg/dL","biochem"],
 ["Procalcitonin","ng/mL","biochem"],
-["Serum Iron","آµg/dL","biochem"],
+["Serum Iron","µg/dL","biochem"],
 ["Serum Osmolality","mOsm/kg","biochem"],
 ["Sodium (Na)","mEq/L","biochem",3],
 ["SPEP","g/dL","biochem"],
 ["Total Bilirubin","mg/dL","biochem",20],
 ["Total Cholesterol","mg/dL","biochem",10],
-["Total Iron Binding Capacity","آµg/dL","biochem"],
+["Total Iron Binding Capacity","µg/dL","biochem"],
 ["Total Protein","g/dL","biochem",10],
 ["Transferrin","mg/dL","biochem"],
 ["Triglycerides","mg/dL","biochem",25],
-["Unsaturated Iron Binding Capacity","آµg/dL","biochem"],
+["Unsaturated Iron Binding Capacity","µg/dL","biochem"],
 ["Uric Acid","mg/dL","biochem",17],
 ["Vitamin B12","pg/mL","biochem"],
 ["VLDL-C","mg/dL","biochem"],
-["Zinc","آµg/dL","biochem"],
+["Zinc","µg/dL","biochem"],
 ["5'-Nucleotidase","U/L","enzyme"],
 ["Alanine Aminotransferase","U/L","enzyme",20],
 ["Alkaline Phosphatase","U/L","enzyme",30],
@@ -251,14 +252,14 @@ const CAT=[
 ["Adrenocorticotropic Hormone","pg/mL","hormone"],
 ["Aldosterone","ng/dL","hormone"],
 ["Androstenedione","ng/dL","hormone"],
-["Anti-Mأ¼llerian Hormone","ng/mL","hormone"],
+["Anti-M¼llerian Hormone","ng/mL","hormone"],
 ["Anti-Thyroglobulin (TG-Ab)","IU/mL","hormone"],
 ["Anti-TPO Antibody","IU/mL","hormone"],
 ["Beta-hCG Quantitative","mIU/mL","hormone"],
 ["Calcitonin","pg/mL","hormone"],
-["Cortisol (4 PM)","آµg/dL","hormone"],
-["Cortisol (8 AM)","آµg/dL","hormone"],
-["DHEA Sulfate","آµg/dL","hormone"],
+["Cortisol (4 PM)","µg/dL","hormone"],
+["Cortisol (8 AM)","µg/dL","hormone"],
+["DHEA Sulfate","µg/dL","hormone"],
 ["Estradiol (E2)","pg/mL","hormone"],
 ["Follicle Stimulating Hormone","mIU/mL","hormone"],
 ["Free T3","pg/mL","hormone"],
@@ -277,12 +278,12 @@ const CAT=[
 ["Thyroglobulin","ng/mL","hormone"],
 ["Thyroid Stimulating Hormone","mIU/L","hormone",20],
 ["Total T3","ng/dL","hormone"],
-["Total T4","آµg/dL","hormone",13],
+["Total T4","µg/dL","hormone",13],
 ["Total Testosterone","ng/dL","hormone"],
 ["TSH Receptor Antibody","IU/L","hormone"],
 ["Basophils","%","hematology"],
 ["Carboxyhemoglobin","%","hematology"],
-["CD4/CD8 Subset","cells/آµL","hematology"],
+["CD4/CD8 Subset","cells/µL","hematology"],
 ["Eosinophils","%","hematology"],
 ["Erythrocyte Sedimentation Rate","mm/h","hematology"],
 ["Fetal Hemoglobin","%","hematology"],
@@ -300,50 +301,50 @@ const CAT=[
 ["Monocytes","%","hematology"],
 ["Neutrophils","%","hematology"],
 ["Osmotic Fragility","%","hematology"],
-["Platelet Count","أ—10آ³/آµL","hematology",25],
-["Platelet Function (PFA-100)","ط«ط§ظ†غŒظ‡","hematology"],
-["RBC Count","أ—10âپ¶/آµL","hematology",6],
+["Platelet Count","—10³/µL","hematology",25],
+["Platelet Function (PFA-100)","«§†Œ‡","hematology"],
+["RBC Count","—10â¶/µL","hematology",6],
 ["Red Cell Distribution Width","%","hematology"],
 ["Reticulocyte Count","%","hematology"],
-["WBC Count","أ—10آ³/آµL","hematology",15],
+["WBC Count","—10³/µL","hematology",15],
 ["Anti-Xa Heparin Level","IU/mL","coag"],
 ["Antithrombin III","%","coag"],
-["Bleeding Time","ط¯ظ‚غŒظ‚ظ‡","coag"],
-["D-dimer","آµg/mL FEU","coag"],
+["Bleeding Time","¯‚Œ‚‡","coag"],
+["D-dimer","µg/mL FEU","coag"],
 ["Factor Assay","%","coag"],
-["Fibrin Degradation Products","آµg/mL","coag"],
+["Fibrin Degradation Products","µg/mL","coag"],
 ["Fibrinogen","mg/dL","coag"],
-["Lupus Anticoagulant","ظ†ط³ط¨طھ","coag"],
-["Partial Thromboplastin Time","ط«ط§ظ†غŒظ‡","coag"],
+["Lupus Anticoagulant","†³¨","coag"],
+["Partial Thromboplastin Time","«§†Œ‡","coag"],
 ["Plasminogen","%","coag"],
 ["Platelet Aggregation","%","coag"],
 ["Protein C","%","coag"],
 ["Protein S","%","coag"],
-["Prothrombin Time","ط«ط§ظ†غŒظ‡","coag"],
-["Thrombin Time","ط«ط§ظ†غŒظ‡","coag"],
+["Prothrombin Time","«§†Œ‡","coag"],
+["Thrombin Time","«§†Œ‡","coag"],
 ["ANCA Profile","U/mL","immuno"],
 ["Anti-Beta2 Glycoprotein I","U/mL","immuno"],
 ["Anti-Cardiolipin IgG/IgM","GPL/MPL","immuno"],
 ["Anti-Cyclic Citrullinated Peptide","U/mL","immuno"],
 ["Anti-DNase B","IU/mL","immuno"],
 ["Anti-dsDNA","IU/mL","immuno"],
-["Anti-Endomysial Antibody","طھغŒطھط±","immuno"],
+["Anti-Endomysial Antibody","Œ±","immuno"],
 ["Anti-GAD65 Antibody","U/mL","immuno"],
-["Anti-Mitochondrial Antibody","طھغŒطھط±","immuno"],
-["Anti-Smooth Muscle Antibody","طھغŒطھط±","immuno"],
+["Anti-Mitochondrial Antibody","Œ±","immuno"],
+["Anti-Smooth Muscle Antibody","Œ±","immuno"],
 ["Anti-Tissue Transglutaminase IgA","U/mL","immuno"],
-["Antinuclear Antibody","طھغŒطھط±","immuno"],
+["Antinuclear Antibody","Œ±","immuno"],
 ["Antistreptolysin O","IU/mL","immuno"],
-["Cold Agglutinin","طھغŒطھط±","immuno"],
+["Cold Agglutinin","Œ±","immuno"],
 ["Complement C3","mg/dL","immuno"],
 ["Complement C4","mg/dL","immuno"],
 ["Rheumatoid Factor","IU/mL","immuno"],
 ["Specific IgE Panel","kU/L","immuno"],
 ["Total Hemolytic Complement","U/mL","immuno"],
 ["Total IgE","IU/mL","immuno"],
-["Weil-Felix Test","طھغŒطھط±","immuno"],
-["Widal Test","طھغŒطھط±","immuno"],
-["Wright Test","طھغŒطھط±","immuno"],
+["Weil-Felix Test","Œ±","immuno"],
+["Widal Test","Œ±","immuno"],
+["Wright Test","Œ±","immuno"],
 ["Anti-HBs Antibody","mIU/mL","viral"],
 ["CMV DNA Quantitative","copies/mL","viral"],
 ["CMV IgG","U/mL","viral"],
@@ -361,17 +362,17 @@ const CAT=[
 ["Toxoplasma IgG","IU/mL","viral"],
 ["Varicella Zoster IgG","U/mL","viral"],
 ["Beta-D-Glucan","pg/mL","micro"],
-["Leishmania DAT","طھغŒطھط±","micro"],
-["Rapid Plasma Reagin","طھغŒطھط±","micro"],
-["Treponema Pallidum Particle Agglutination","طھغŒطھط±","micro"],
-["Tuberculin Skin Test","mm ط§غŒظ†ط¯ظˆط±ط§ط³غŒظˆظ†","micro"],
+["Leishmania DAT","Œ±","micro"],
+["Rapid Plasma Reagin","Œ±","micro"],
+["Treponema Pallidum Particle Agglutination","Œ±","micro"],
+["Tuberculin Skin Test","mm §Œ†¯ˆ±§³Œˆ†","micro"],
 ["Urea Breath Test","DOB","micro"],
 ["Urine Culture","CFU/mL","micro"],
 ["BCR-ABL1 Quantitative","%IS","molecular"],
-["FMR1 CGG Repeat","ع©ظ¾غŒ","molecular"],
+["FMR1 CGG Repeat","©¾Œ","molecular"],
 ["HBV DNA Quantitative","IU/mL","molecular"],
 ["HCV RNA Quantitative","IU/mL","molecular"],
-["MLPA Copy Number","ع©ظ¾غŒ","molecular"],
+["MLPA Copy Number","©¾Œ","molecular"],
 ["Alpha-Fetoprotein","ng/mL","tumor"],
 ["Beta-2 Microglobulin (prognosis)","mg/L","tumor"],
 ["Beta-hCG (tumor marker)","mIU/mL","tumor"],
@@ -387,7 +388,7 @@ const CAT=[
 ["Neuron Specific Enolase","ng/mL","tumor"],
 ["Pro-gastrin Releasing Peptide","pg/mL","tumor"],
 ["Prostate Specific Antigen","ng/mL","tumor"],
-["S100 Protein","آµg/L","tumor"],
+["S100 Protein","µg/L","tumor"],
 ["Squamous Cell Carcinoma Antigen","ng/mL","tumor"],
 ["24h 5-HIAA","mg/24h","urine"],
 ["24h Creatinine Clearance","mL/min","urine"],
@@ -397,9 +398,9 @@ const CAT=[
 ["24h Urine Protein","mg/24h","urine"],
 ["24h Urine Uric Acid","mg/24h","urine"],
 ["24h Vanillylmandelic Acid","mg/24h","urine"],
-["Fecal Calprotectin","آµg/g","urine"],
+["Fecal Calprotectin","µg/g","urine"],
 ["Fecal Fat","g/24h","urine"],
-["Metanephrines","آµg/24h","urine"],
+["Metanephrines","µg/24h","urine"],
 ["Urine Albumin/Creatinine Ratio","mg/g","urine"],
 ["Urine Blood","RBC/HPF","urine"],
 ["Urine Culture & Sensitivity","CFU/mL","urine"],
@@ -409,30 +410,30 @@ const CAT=[
 ["Urine Potassium","mEq/L","urine"],
 ["Urine Protein","mg/dL","urine"],
 ["Urine Sodium","mEq/L","urine"],
-["Acetaminophen Level","آµg/mL","tox"],
-["Amikacin Peak/Trough","آµg/mL","tox"],
-["Arsenic Level","آµg/L","tox"],
-["Blood Lead Level","آµg/dL","tox"],
-["Carbamazepine Level","آµg/mL","tox"],
+["Acetaminophen Level","µg/mL","tox"],
+["Amikacin Peak/Trough","µg/mL","tox"],
+["Arsenic Level","µg/L","tox"],
+["Blood Lead Level","µg/dL","tox"],
+["Carbamazepine Level","µg/mL","tox"],
 ["Cyclosporine Trough","ng/mL","tox"],
 ["Digoxin Level","ng/mL","tox"],
 ["Ethanol Level","mg/dL","tox"],
-["Gentamicin Peak/Trough","آµg/mL","tox"],
+["Gentamicin Peak/Trough","µg/mL","tox"],
 ["Lithium Level","mEq/L","tox"],
-["Mercury Level","آµg/L","tox"],
+["Mercury Level","µg/L","tox"],
 ["Methotrexate Level","nmol/L","tox"],
-["Phenobarbital Level","آµg/mL","tox"],
-["Phenytoin Level","آµg/mL","tox"],
+["Phenobarbital Level","µg/mL","tox"],
+["Phenytoin Level","µg/mL","tox"],
 ["Salicylate Level","mg/dL","tox"],
 ["Tacrolimus Trough","ng/mL","tox"],
-["Theophylline Level","آµg/mL","tox"],
-["Valproic Acid Level","آµg/mL","tox"],
-["Vancomycin Trough","آµg/mL","tox"]
+["Theophylline Level","µg/mL","tox"],
+["Valproic Acid Level","µg/mL","tox"],
+["Vancomycin Trough","µg/mL","tox"]
 ];
 let DB=JSON.parse(localStorage.getItem(KEY)||'null')||{tests:[],entries:[]};
 const $=i=>document.getElementById(i);
 const save=()=>localStorage.setItem(KEY,JSON.stringify(DB));
-const fmt=(x,d=2)=>(x==null||isNaN(x))?'â€”':Number(x).toLocaleString('en-US',{maximumFractionDigits:d});
+const fmt=(x,d=2)=>(x==null||isNaN(x))?'—':Number(x).toLocaleString('en-US',{maximumFractionDigits:d});
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const today=()=>new Date().toISOString().slice(0,10);
 const cur=()=>DB.tests.find(t=>t.id===$('tid').value);
@@ -441,7 +442,7 @@ const lvl=t=>t.level===1?'Normal (L1)':'Pathological (L2)';
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const NAME_MAP={};CAT.forEach(c=>{const k=c[0].toLowerCase();if(!NAME_MAP[k])NAME_MAP[k]={unit:c[1],cat:c[2],tea:c[3]||null};});
  $('catCount').textContent=CAT.length;
- $('tCat').innerHTML='<option value="">All categories â€” '+CAT.length+' tests</option>'+Object.keys(CATL).map(k=>`<option value="${k}">${CATL[k]} (${CAT.filter(x=>x[2]===k).length})</option>`).join('');
+ $('tCat').innerHTML='<option value="">All categories — '+CAT.length+' tests</option>'+Object.keys(CATL).map(k=>`<option value="${k}">${CATL[k]} (${CAT.filter(x=>x[2]===k).length})</option>`).join('');
 function fillDatalist(){const c=$('tCat').value;$('testList').innerHTML=CAT.filter(x=>!c||x[2]===c).map(x=>`<option value="${esc(x[0])}">${esc(x[0])}</option>`).join('');}
 fillDatalist();
  $('eDate').value=today();
@@ -488,7 +489,7 @@ function ozMapFor(t){
 }
 function westgard(list,oz){
   return list.map((p,i)=>{
-    const z=p.z;if(z==null)return{status:'â€”',rules:[]};
+    const z=p.z;if(z==null)return{status:'—',rules:[]};
     const rules=[];
     if(Math.abs(z)>3)rules.push('1-3s');
     const w12=Math.abs(z)>2;if(w12)rules.push('1-2s');
@@ -505,11 +506,11 @@ function westgard(list,oz){
 
 function renderAll(){
   const sel=$('tid').value;
-  $('tid').innerHTML=DB.tests.map(t=>`<option value="${t.id}">${t.name} â€” ${lvl(t)}${t.unit?' ('+t.unit+')':''}</option>`).join('');
+  $('tid').innerHTML=DB.tests.map(t=>`<option value="${t.id}">${t.name} — ${lvl(t)}${t.unit?' ('+t.unit+')':''}</option>`).join('');
   if(sel&&DB.tests.some(t=>t.id===sel))$('tid').value=sel;
   $('testsTable').innerHTML=DB.tests.length?
     '<table><thead><tr><th>Analyte</th><th>Category</th><th>Level</th><th>Unit</th><th>Target Mean</th><th>Target SD</th><th>TEa %</th><th>Points</th><th></th></tr></thead><tbody>'+
-    DB.tests.map(t=>{const cx=NAME_MAP[t.name.toLowerCase()];return `<tr><td>${t.name}</td><td>${cx?CATL[cx.cat]:'â€”'}</td><td>${lvl(t)}</td><td>${t.unit||'â€”'}</td><td>${fmt(t.targetMean)}</td><td>${fmt(t.targetSD)}</td><td>${fmt(t.tea,1)}</td><td>${DB.entries.filter(e=>e.testId===t.id).length}</td><td><button class="btn ghost sm" onclick="selectSeries('${t.id}')">Open</button> <button class="btn red sm" onclick="delTest('${t.id}')">Delete</button></td></tr>`}).join('')+'</tbody></table>'
+    DB.tests.map(t=>{const cx=NAME_MAP[t.name.toLowerCase()];return `<tr><td>${t.name}</td><td>${cx?CATL[cx.cat]:'—'}</td><td>${lvl(t)}</td><td>${t.unit||'—'}</td><td>${fmt(t.targetMean)}</td><td>${fmt(t.targetSD)}</td><td>${fmt(t.tea,1)}</td><td>${DB.entries.filter(e=>e.testId===t.id).length}</td><td><button class="btn ghost sm" onclick="selectSeries('${t.id}')">Open</button> <button class="btn red sm" onclick="delTest('${t.id}')">Delete</button></td></tr>`}).join('')+'</tbody></table>'
     :'<div class="empty">No QC series yet.</div>';
   const t=cur();
   if(!t){$('stats').innerHTML='';$('chart').innerHTML='<div class="empty">Create a series to begin.</div>';$('ptable').innerHTML='<div class="empty">No data yet.</div>';$('calcNote').textContent='';return;}
@@ -517,21 +518,21 @@ function renderAll(){
   const marks=westgard(list,ozMapFor(t));
   marks.forEach((m,i)=>{list[i].status=m.status;list[i].rules=m.rules;});
   window.CURLIST=list;
-  const stTxt={ok:'Accept',warn:'Warning',bad:'Reject','â€”':'â€”'};
+  const stTxt={ok:'Accept',warn:'Warning',bad:'Reject','—':'—'};
   const cards=[
     ['Mean',fmt(st.mean),'average of window','#2563eb'],
     ['SD',fmt(st.sd),st.useCalc?'Calculated (nâˆ’1)':(t.targetSD?'Target':'Need â‰¥2 points'),'#64748b'],
     ['CV %',fmt(st.cv),st.cv==null?'':(st.cv<2?'âœ“ Excellent':st.cv<5?'Acceptable':'High'),'#16a34a'],
     ['Bias %',fmt(st.bias),st.bias==null?'Needs target mean':'vs target mean','#d97706'],
     ['TEa %',fmt(t.tea,1),t.tea?'':'Not set','#8b5cf6'],
-    ['Sigma',fmt(st.sigma),st.sigma==null?'':(st.sigma>=6?'â­گ World-class':st.sigma>=5?'Excellent':st.sigma>=4?'Good':st.sigma>=3?'Minimum':'Unacceptable'),'#0ea5e9']
+    ['Sigma',fmt(st.sigma),st.sigma==null?'':(st.sigma>=6?'â­ World-class':st.sigma>=5?'Excellent':st.sigma>=4?'Good':st.sigma>=3?'Minimum':'Unacceptable'),'#0ea5e9']
   ];
   $('stats').innerHTML=cards.map(c=>`<div class="stat" style="border-top-color:${c[3]}"><small>${c[0]}</small><b>${c[1]}</b><small class="sub">${c[2]}</small></div>`).join('');
-  $('calcNote').textContent=`n = ${st.n} â€” Chart basis: ${st.useCalc?'Mean & SD calculated from your own data':'target Mean & SD from series settings (â‰¥20 points are needed for auto-calculation)'}`;
+  $('calcNote').textContent=`n = ${st.n} — Chart basis: ${st.useCalc?'Mean & SD calculated from your own data':'target Mean & SD from series settings (â‰¥20 points are needed for auto-calculation)'}`;
   renderChart(st,list);
   $('ptable').innerHTML=list.length?
     '<table><thead><tr><th>Date</th><th>Value</th><th>z-score</th><th>Rules triggered</th><th>Status</th><th></th></tr></thead><tbody>'+
-    list.slice(-30).reverse().map(p=>`<tr><td>${p.date}</td><td>${fmt(p.value)}</td><td>${fmt(p.z)}</td><td>${p.rules.length?p.rules.join(', '):'â€”'}</td><td><span class="badge b-${p.status}">${stTxt[p.status]}</span></td><td><button class="btn red sm" style="padding:2px 9px;font-size:11.5px" onclick="delEntry('${p.id}')">âœ•</button></td></tr>`).join('')+'</tbody></table>'
+    list.slice(-30).reverse().map(p=>`<tr><td>${p.date}</td><td>${fmt(p.value)}</td><td>${fmt(p.z)}</td><td>${p.rules.length?p.rules.join(', '):'—'}</td><td><span class="badge b-${p.status}">${stTxt[p.status]}</span></td><td><button class="btn red sm" style="padding:2px 9px;font-size:11.5px" onclick="delEntry('${p.id}')">âœ•</button></td></tr>`).join('')+'</tbody></table>'
     :'<div class="empty">No data yet.</div>';
 }
 
@@ -558,7 +559,7 @@ function renderChart(st,list){
   const stTxt={ok:'Accept',warn:'Warning (1-2s)',bad:'Reject'};
   list.forEach((p,i)=>{
     const c=pcol[p.status]||'#94a3b8';
-    const ttip=`${p.date} آ· ${fmt(p.value)} آ· z=${fmt(p.z)} آ· ${stTxt[p.status]||'â€”'}${p.rules.length?' آ· '+p.rules.join(', '):''}`;
+    const ttip=`${p.date} · ${fmt(p.value)} · z=${fmt(p.z)} · ${stTxt[p.status]||'—'}${p.rules.length?' · '+p.rules.join(', '):''}`;
     g+=`<circle cx="${x(i)}" cy="${y(p.value)}" r="${p.status==='bad'?5.5:4.2}" fill="${c}" stroke="#fff" stroke-width="1.5" opacity=".95" style="cursor:pointer"><title>${ttip}</title></circle>`;
   });
   el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-family:var(--font);min-width:${W}px">${g}</svg>`;
@@ -568,7 +569,7 @@ function exportCSV(){
   const t=cur();if(!t)return alert('Select a series first');
   const list=window.CURLIST||[];
   if(!list.length)return alert('No data to export');
-  const stTxt={ok:'Accept',warn:'Warning',bad:'Reject','â€”':'â€”'};
+  const stTxt={ok:'Accept',warn:'Warning',bad:'Reject','—':'—'};
   const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
   const csv='Date,Value,z-score,Status,Rules\n'+list.map(p=>[p.date,p.value,p.z==null?'':+p.z.toFixed(3),stTxt[p.status]||'',p.rules.join(' ')].map(esc).join(',')).join('\n');
   const a=document.createElement('a');

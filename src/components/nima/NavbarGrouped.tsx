@@ -25,7 +25,7 @@ export const NAV_GROUPS: NavGroup[] = [
     children: [
       { id: 'tests',     label: 'Lab Tests',        icon: TestTubes,      desc: 'Complete reference, all disciplines' },
       { id: 'formulas',  label: 'Formulas',         icon: Sigma,          desc: 'Clinical formulas with calculators' },
-      { id: 'qc',        label: 'Quality Control',  icon: Gauge,          desc: 'Levey-Jennings & Westgard', href: '/iqc.html' },
+      { id: 'qc',        label: 'Quality Control',  icon: Gauge,          desc: 'Levey-Jennings & Westgard' },
       { id: 'integrity', label: 'Result Integrity', icon: ShieldCheck,    desc: 'Cross-test consistency with charts' },
       { id: 'accuracy',  label: 'Accuracy',         icon: Target,         desc: 'Bias & accuracy vs target values' },
       { id: 'analyzer',  label: 'Analyzer',         icon: Microscope,     desc: 'Parameters & result troubleshooting' },
